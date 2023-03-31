@@ -1,0 +1,14 @@
+package lens
+version = 0.0.0
+
+brief = "Batteries-included profunctor optics for Idris2"
+
+authors = "Kiana Sheibani"
+license = "MIT"
+
+sourcedir = "src"
+readme = "README.md"
+
+langversion >= 0.6.0
+
+modules =
