@@ -10,5 +10,9 @@ sourcedir = "src"
 readme = "README.md"
 
 langversion >= 0.6.0
+depends = profunctors >= 1.1.2
 
-modules =
+modules = Control.Lens.Optic,
+          Control.Lens.Equality,
+          Control.Lens.Iso,
+          Control.Lens.Lens

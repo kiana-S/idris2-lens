@@ -1,0 +1,14 @@
+module Control.Lens.Optic
+
+import Data.Profunctor
+
+%default total
+
+
+public export
+Optic' : (p : Type -> Type -> Type) -> (s,t,a,b : Type) -> Type
+Optic' p s t a b = p a b -> p s t
+
+public export
+0 Optic : ((Type -> Type -> Type) -> Type) -> (s,t,a,b : Type) -> Type
+Optic constr s t a b = forall p. constr p => Optic' p s t a b
