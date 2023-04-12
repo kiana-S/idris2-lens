@@ -6,6 +6,11 @@ import Data.Profunctor
 
 
 public export
+Simple : (k -> k -> k' -> k' -> r) -> k -> k' -> r
+Simple f s a = f s s a a
+
+
+public export
 Optic' : (p : Type -> Type -> Type) -> (s,t,a,b : Type) -> Type
 Optic' p s t a b = p a b -> p s t
 

@@ -27,7 +27,7 @@ Traversal = Optic IsTraversal
 
 public export
 0 Traversal' : (s,a : Type) -> Type
-Traversal' s a = Traversal s s a a
+Traversal' = Simple Traversal
 
 
 public export

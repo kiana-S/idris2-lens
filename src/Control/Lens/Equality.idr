@@ -15,7 +15,7 @@ Equality s t a b = forall p. IsEquality p => p a b -> p s t
 
 public export
 0 Equality' : k -> k -> Type
-Equality' s a = Equality s s a a
+Equality' = Simple Equality
 
 
 public export

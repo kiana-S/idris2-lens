@@ -23,7 +23,7 @@ Iso = Optic IsIso
 
 public export
 0 Iso' : (s,a : Type) -> Type
-Iso' s a = Iso s s a a
+Iso' = Simple Iso
 
 
 public export

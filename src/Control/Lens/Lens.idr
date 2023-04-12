@@ -25,7 +25,7 @@ Lens = Optic IsLens
 
 public export
 0 Lens' : (s,a : Type) -> Type
-Lens' s a = Lens s s a a
+Lens' = Simple Lens
 
 
 public export

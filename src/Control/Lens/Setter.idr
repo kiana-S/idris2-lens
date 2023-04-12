@@ -28,7 +28,7 @@ Setter = Optic IsSetter
 
 public export
 0 Setter' : (s,a : Type) -> Type
-Setter' s a = Optic IsSetter s s a a
+Setter' = Simple Setter
 
 
 public export

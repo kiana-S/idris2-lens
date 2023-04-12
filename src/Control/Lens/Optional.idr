@@ -27,7 +27,7 @@ Optional = Optic IsOptional
 
 public export
 0 Optional' : (s,a : Type) -> Type
-Optional' s a = Optional s s a a
+Optional' = Simple Optional
 
 
 public export

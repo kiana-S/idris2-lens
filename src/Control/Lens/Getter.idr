@@ -21,7 +21,7 @@ getterToLens @{MkIsGetter _} = MkIsLens %search
 
 public export
 0 Getter : (s,a : Type) -> Type
-Getter s a = Optic IsGetter s s a a
+Getter = Simple (Optic IsGetter)
 
 
 public export

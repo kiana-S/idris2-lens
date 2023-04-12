@@ -23,7 +23,7 @@ Prism = Optic IsPrism
 
 public export
 0 Prism' : (s,a : Type) -> Type
-Prism' s a = Prism s s a a
+Prism' = Simple Prism
 
 
 public export

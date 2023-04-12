@@ -26,7 +26,7 @@ optFoldToGetter @{MkIsOptFold _} = MkIsGetter %search
 
 public export
 0 OptionalFold : (s,a : Type) -> Type
-OptionalFold s a = Optic IsOptFold s s a a
+OptionalFold = Simple (Optic IsOptFold)
 
 
 public export
