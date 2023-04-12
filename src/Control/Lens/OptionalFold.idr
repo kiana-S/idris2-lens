@@ -1,8 +1,8 @@
 module Control.Lens.OptionalFold
 
+import Data.Bicontravariant
 import Data.Profunctor
 import Data.Profunctor.Costrong
-import Control.Lens.Internal.Bicontravariant
 import Control.Lens.Optic
 import Control.Lens.Optional
 import Control.Lens.Getter

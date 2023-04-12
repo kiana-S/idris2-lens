@@ -4,7 +4,7 @@ import Control.Monad.State
 import Data.Zippable
 import Data.Profunctor
 import Data.Profunctor.Traversing
-import Control.Lens.Internal.Backwards
+import Control.Applicative.Backwards
 import Control.Lens.Optic
 import Control.Lens.Optional
 

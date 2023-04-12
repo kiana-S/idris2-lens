@@ -1,4 +1,4 @@
-module Control.Lens.Internal.Bicontravariant
+module Data.Bicontravariant
 
 import Data.Morphisms
 import Data.Contravariant

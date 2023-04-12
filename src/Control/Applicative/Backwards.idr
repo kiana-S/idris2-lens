@@ -1,4 +1,4 @@
-module Control.Lens.Internal.Backwards
+module Control.Applicative.Backwards
 
 %default total
 

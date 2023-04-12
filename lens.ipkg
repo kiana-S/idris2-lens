@@ -12,7 +12,18 @@ readme = "README.md"
 langversion >= 0.6.0
 depends = profunctors >= 1.1.2
 
-modules = Control.Lens.Optic,
+modules = Control.Applicative.Backwards,
           Control.Lens.Equality,
+          Control.Lens.Fold,
+          Control.Lens.Getter,
           Control.Lens.Iso,
-          Control.Lens.Lens
+          Control.Lens.Lens,
+          Control.Lens.Optic,
+          Control.Lens.Optional,
+          Control.Lens.OptionalFold,
+          Control.Lens.Prism,
+          Control.Lens.Review,
+          Control.Lens.Setter,
+          Control.Lens.Traversal,
+          Control.Lens,
+          Data.Bicontravariant

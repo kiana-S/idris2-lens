@@ -1,10 +1,10 @@
 module Control.Lens.Getter
 
+import Data.Bicontravariant
 import Data.Profunctor
 import Data.Profunctor.Costrong
 import Control.Lens.Optic
 import Control.Lens.Lens
-import Control.Lens.Internal.Bicontravariant
 
 %default total
 

@@ -1,10 +1,10 @@
 module Control.Lens.Fold
 
+import Data.Bicontravariant
 import Data.Profunctor
 import Data.Profunctor.Costrong
 import Data.Profunctor.Traversing
-import Control.Lens.Internal.Bicontravariant
-import Control.Lens.Internal.Backwards
+import Control.Applicative.Backwards
 import Control.Lens.Optic
 import Control.Lens.OptionalFold
 import Control.Lens.Traversal
