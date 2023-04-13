@@ -3,6 +3,8 @@ module Control.Applicative.Backwards
 %default total
 
 
+||| Wrap an `Applicative` type constructor so that its actions are executed
+||| in the opposite order.
 public export
 record Backwards {0 k : Type} (f : k -> Type) a where
   constructor MkBackwards

@@ -7,6 +7,12 @@ import Control.Lens.Prism
 
 %default total
 
+
+------------------------------------------------------------------------------
+-- Type definitions
+------------------------------------------------------------------------------
+
+
 public export
 record IsOptional p where
   constructor MkIsOptional
@@ -21,15 +27,24 @@ optionalToPrism : IsOptional p => IsPrism p
 optionalToPrism @{MkIsOptional _} = MkIsPrism %search
 
 
+||| An `Optional` is a lens that may or may not contain the focus value.
+||| As such, accesses will return a `Maybe` value.
 public export
 0 Optional : (s,t,a,b : Type) -> Type
 Optional = Optic IsOptional
 
+||| `Optional'` is the `Simple` version of `Optional`.
 public export
 0 Optional' : (s,a : Type) -> Type
 Optional' = Simple Optional
 
 
+------------------------------------------------------------------------------
+-- Utilities for Optionals
+------------------------------------------------------------------------------
+
+
+||| Construct an optional from a projection and a setter function.
 public export
 optional : (s -> Either t a) -> (s -> b -> t) -> Optional s t a b
 optional prj set @{MkIsOptional _} = dimap @{fromStrong}
@@ -41,11 +56,25 @@ optional prj set @{MkIsOptional _} = dimap @{fromStrong}
     fromStrong : Strong p => Profunctor p
     fromStrong = %search
 
+||| Construct a simple optional from a projection and a setter function.
 public export
 optional' : (s -> Maybe a) -> (s -> b -> s) -> Optional s s a b
 optional' prj = optional (\x => maybe (Left x) Right (prj x))
 
+||| The trivial optic that has no focuses.
+public export
+ignored : Optional s s a b
+ignored @{MkIsOptional _} = dimap @{fromStrong}
+  (\x => (Left x, const x))
+  (\(e, f) => either id (the (b -> s) f) e)
+  . first . right
+  where
+    -- arbitrary choice of where to pull profunctor instance from
+    fromStrong : Strong p => Profunctor p
+    fromStrong = %search
 
+
+||| Extract projection and setter functions from an optional.
 public export
 getOptional : Optional s t a b -> (s -> Either t a, s -> b -> t)
 getOptional l = l @{MkIsOptional (strong,choice)} (Right, const id)
@@ -63,18 +92,7 @@ getOptional l = l @{MkIsOptional (strong,choice)} (Right, const id)
       strongr (prj, set) = (either (Left . Left) (either (Left . Right) Right . prj),
                             \e,b => mapSnd (`set` b) e)
 
+||| Extract projection and setter functions from an optional.
 public export
 withOptional : Optional s t a b -> ((s -> Either t a) -> (s -> b -> t) -> r) -> r
 withOptional l f = uncurry f (getOptional l)
-
-
-public export
-ignored : Optional s s a b
-ignored @{MkIsOptional _} = dimap @{fromStrong}
-  (\x => (Left x, const x))
-  (\(e, f) => either id (the (b -> s) f) e)
-  . first . right
-  where
-    -- arbitrary choice of where to pull profunctor instance from
-    fromStrong : Strong p => Profunctor p
-    fromStrong = %search

@@ -10,6 +10,11 @@ import Control.Lens.Getter
 %default total
 
 
+------------------------------------------------------------------------------
+-- Type definitions
+------------------------------------------------------------------------------
+
+
 public export
 record IsOptFold p where
   constructor MkIsOptFold
@@ -24,16 +29,29 @@ optFoldToGetter : IsOptFold p => IsGetter p
 optFoldToGetter @{MkIsOptFold _} = MkIsGetter %search
 
 
+||| An `OptionalFold` is a getter that may not return a focus value.
+||| `OptionalFold s a` is equivalent to `s -> Maybe a`.
 public export
 0 OptionalFold : (s,a : Type) -> Type
 OptionalFold = Simple (Optic IsOptFold)
 
 
+------------------------------------------------------------------------------
+-- Utilities for OptionalFolds
+------------------------------------------------------------------------------
+
+
+||| Construct an `OptionalFold` from a function.
 public export
 folding : (s -> Maybe a) -> OptionalFold s a
 folding f @{MkIsOptFold _} =
   contrabimap (\x => maybe (Left x) Right (f x)) Left . right
 
+||| Construct an `OptionalFold` that can be used to filter the focuses
+||| of another optic.
+|||
+||| To be more specific, this optic passes the value through unchanged if it
+||| satisfies the predicate and returns no values if it does not.
 public export
 filtered : (a -> Bool) -> OptionalFold a a
 filtered p = folding (\x => if p x then Just x else Nothing)

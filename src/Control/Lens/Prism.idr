@@ -7,6 +7,11 @@ import Control.Lens.Iso
 %default total
 
 
+------------------------------------------------------------------------------
+-- Type definitions
+------------------------------------------------------------------------------
+
+
 public export
 record IsPrism p where
   constructor MkIsPrism
@@ -17,24 +22,39 @@ prismToIso : IsPrism p => IsIso p
 prismToIso @{MkIsPrism _} = MkIsIso %search
 
 
+||| A prism is a first-class reference to one of the cases of a sum type.
+||| Prisms allow one to determine whether a value matches the focused case
+||| and extract the corresponding data if it does.
+|||
+||| More precisely, a `Prism` is an `Optional` that can be flipped to obtain
+||| a `Getter` in the opposite direction.
 public export
 0 Prism : (s,t,a,b : Type) -> Type
 Prism = Optic IsPrism
 
+||| `Prism'` is the `Simple` version of `Prism`.
 public export
 0 Prism' : (s,a : Type) -> Type
 Prism' = Simple Prism
 
 
+------------------------------------------------------------------------------
+-- Utilities for prisms
+------------------------------------------------------------------------------
+
+
+||| Construct a prism from injection and projection functions.
 public export
 prism : (b -> t) -> (s -> Either t a) -> Prism s t a b
 prism inj prj @{MkIsPrism _} = dimap prj (either id inj) . right
 
+||| Construct a simple prism from injection and projection functions.
 public export
 prism' : (b -> s) -> (s -> Maybe a) -> Prism s s a b
 prism' inj prj = prism inj (\x => maybe (Left x) Right (prj x))
 
 
+||| Extract injection and projection functions from a prism.
 public export
 getPrism : Prism s t a b -> (b -> t, s -> Either t a)
 getPrism l = l @{MkIsPrism choice} (id, Right)
@@ -46,15 +66,18 @@ getPrism l = l @{MkIsPrism choice} (id, Right)
       strongl (inj, prj) = (Left . inj, either (either (Left . Left) Right . prj) (Left . Right))
       strongr (inj, prj) = (Right . inj, either (Left . Left) (either (Left . Right) Right . prj))
 
+||| Extract injection and projection functions from a prism.
 public export
 withPrism : Prism s t a b -> ((b -> t) -> (s -> Either t a) -> r) -> r
 withPrism l f = uncurry f (getPrism l)
 
 
+||| Construct a prism that uses a predicate to determine if a value matches.
 public export
 nearly : a -> (a -> Bool) -> Prism' a ()
 nearly x p = prism' (const x) (guard . p)
 
+||| Construct a prism that matches only one value.
 public export
 only : Eq a => a -> Prism' a ()
 only x = nearly x (x ==)
