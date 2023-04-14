@@ -64,14 +64,7 @@ optional' prj = optional (\x => maybe (Left x) Right (prj x))
 ||| The trivial optic that has no focuses.
 public export
 ignored : Optional s s a b
-ignored @{MkIsOptional _} = dimap @{fromStrong}
-  (\x => (Left x, const x))
-  (\(e, f) => either id (the (b -> s) f) e)
-  . first . right
-  where
-    -- arbitrary choice of where to pull profunctor instance from
-    fromStrong : Strong p => Profunctor p
-    fromStrong = %search
+ignored = optional' (const Nothing) const
 
 
 ||| Extract projection and setter functions from an optional.
@@ -96,3 +89,9 @@ getOptional l = l @{MkIsOptional (strong,choice)} (Right, const id)
 public export
 withOptional : Optional s t a b -> ((s -> Either t a) -> (s -> b -> t) -> r) -> r
 withOptional l f = uncurry f (getOptional l)
+
+||| Retrieve the focus value of an optional, or allow its type to change if there
+||| is no focus.
+public export
+matching : Prism s t a b -> s -> Either t a
+matching = snd . getPrism

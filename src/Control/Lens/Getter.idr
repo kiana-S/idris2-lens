@@ -42,6 +42,11 @@ public export
 to : (s -> a) -> Getter s a
 to f @{MkIsGetter _} = lmap f . rphantom
 
+||| Construct a getter that always returns a constant value.
+public export
+like : a -> Getter s a
+like = to . const
+
 
 ||| Access the value of an optic and apply a function to it, returning the result.
 public export

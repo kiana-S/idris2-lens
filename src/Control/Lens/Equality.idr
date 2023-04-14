@@ -66,7 +66,7 @@ substEq : forall p. Equality s t a b -> p a b a b -> p s t a b
 substEq {p} l = l {p = \x,y => p x y a b}
 
 
-||| A trivial `Simple Equality`.
+||| The trivial `Simple Equality`.
 ||| Composing this optic with any other can force it to be a `Simple` optic.
 public export
 simple : Equality' a a

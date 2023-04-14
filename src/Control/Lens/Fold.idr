@@ -70,8 +70,8 @@ folding @{_} f @{MkIsFold _} = rphantom . contramapFst f . wander traverse_
 
 ||| Reverse the order of a fold's focuses.
 public export
-backwardsFold : Fold s a -> Fold s a
-backwardsFold l @{MkIsFold _} = rphantom . wander func
+backwards : Fold s a -> Fold s a
+backwards l @{MkIsFold _} = rphantom . wander func
   where
     traversing : Applicative f => Traversing (Forget (f ()))
     traversing =
@@ -81,6 +81,16 @@ backwardsFold l @{MkIsFold _} = rphantom . wander func
     func : Applicative f => (a -> f a) -> s -> f ()
     func fn = let _ = traversing in
       forwards . runForget (l $ MkForget (MkBackwards {f} . ignore . fn))
+
+||| Construct a fold that replicates the input n times.
+public export
+replicated : Nat -> Fold a a
+replicated n @{MkIsFold _} = rphantom . wander (\f,x => rep n (f x))
+  where
+    rep : Applicative f => Nat -> f a -> f ()
+    rep Z _ = pure ()
+    rep (S Z) x = ignore x
+    rep (S n@(S _)) x = x *> rep n x
 
 
 ||| Map each focus of an optic to a monoid value and combine them.
@@ -104,6 +114,11 @@ foldlOf l = flip . foldMapOf @{MkMonoid @{MkSemigroup $ flip (.)} id} l . flip
 public export
 concatOf : Monoid m => Fold s m -> s -> m
 concatOf l = foldMapOf l id
+
+||| Fold over the focuses of an optic using Alternative.
+public export
+choiceOf : Alternative f => Fold s (Lazy (f a)) -> s -> f a
+choiceOf = force .: concatOf @{MonoidAlternative}
 
 ||| Evaluate each computation of an optic and discard the results.
 public export
@@ -146,6 +161,32 @@ anyOf : Fold s a -> (a -> Bool) -> s -> Bool
 anyOf = foldMapOf @{Any}
 
 
+||| Return `True` if the element occurs in the focuses of the optic.
+public export
+elemOf : Eq a => Fold s a -> a -> s -> Bool
+elemOf l = allOf l . (==)
+
+||| Calculate the number of focuses of the optic.
+public export
+lengthOf : Fold s a -> s -> Nat
+lengthOf l = foldMapOf @{Additive} l (const 1)
+
+||| Access the first focus value of an optic, returning `Nothing` if there are
+||| no focuses.
+|||
+||| This is identical to `preview`.
+public export
+firstOf : Fold s a -> s -> Maybe a
+firstOf l = foldMapOf l Just
+
+||| Access the last focus value of an optic, returning `Nothing` if there are
+||| no focuses.
+public export
+lastOf : Fold s a -> s -> Maybe a
+lastOf l = foldMapOf @{MkMonoid @{MkSemigroup $ flip (<+>)} neutral} l Just
+
+
+
 ------------------------------------------------------------------------------
 -- Accessing folds
 ------------------------------------------------------------------------------
@@ -166,13 +207,15 @@ hasn't l = allOf l (const False)
 ||| returning `Nothing` if there are no focuses.
 public export
 previews : Fold s a -> (a -> r) -> s -> Maybe r
-previews l f = foldMapOf @{MonoidAlternative} l (Just . f)
+previews l f = foldMapOf l (Just . f)
 
 ||| Access the first focus value of an optic, returning `Nothing` if there are
 ||| no focuses.
+|||
+||| This is an alias for `firstOf`.
 public export
 preview : Fold s a -> s -> Maybe a
-preview l = foldMapOf @{MonoidAlternative} l Just
+preview = firstOf
 
 infixl 8 ^?
 
@@ -185,12 +228,24 @@ public export
 (^?) s l = preview l s
 
 
+||| Convert a `Fold` into an `OptionalFold` that accesses the first focus element.
+|||
+||| For the traversal version of this, see `singular`.
+public export
+pre : Fold s a -> OptionalFold s a
+pre = folding . preview
+
+
+||| Return a list of all focuses of a fold.
 public export
 toListOf : Fold s a -> s -> List a
 toListOf l = foldrOf l (::) []
 
 infixl 8 ^..
 
+||| Return a list of all focuses of a fold.
+|||
+||| This is the operator form of `toListOf`.
 public export
 (^..) : s -> Fold s a -> List a
 (^..) s l = toListOf l s

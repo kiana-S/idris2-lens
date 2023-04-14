@@ -90,6 +90,14 @@ public export
 united : Lens' a ()
 united @{MkIsLens _} = dimap ((),) snd . first
 
+||| Create a lens that operates on pairs from two other lenses.
+public export
+alongside : Lens s t a b -> Lens s' t' a' b' -> Lens (s, s') (t, t') (a, a') (b, b')
+alongside l l' =
+  let (get1, set1) = getLens l
+      (get2, set2) = getLens l'
+  in lens (bimap get1 get2) (uncurry bimap . bimap set1 set2)
+
 
 
 ||| Optimize a composition of optics by fusing their uses of `dimap` into one.

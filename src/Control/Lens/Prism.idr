@@ -81,3 +81,28 @@ nearly x p = prism' (const x) (guard . p)
 public export
 only : Eq a => a -> Prism' a ()
 only x = nearly x (x ==)
+
+
+||| Create a prism that operates on `Either` values from two other prisms.
+|||
+||| This can be seen as dual to `alongside`.
+public export
+without : Prism s t a b -> Prism s' t' a' b' -> Prism (Either s s') (Either t t') (Either a a') (Either b b')
+without l l' =
+  let (inj1, prj1) = getPrism l
+      (inj2, prj2) = getPrism l'
+  in prism (bimap inj1 inj2) (either (bimap Left Left . prj1) (bimap Right Right . prj2))
+
+||| Lift a prism through a `Traversable` container.
+|||
+||| The constructed prism will only match if all of the inner elements of the
+||| `Traversable` container match.
+public export
+below : Traversable f => Prism' s a -> Prism' (f s) (f a)
+below l = withPrism l $ \inj,prj =>
+  prism (map inj) $ \s => mapFst (const s) (traverse prj s)
+
+||| Lift a prism through part of a product type.
+public export
+aside : Prism s t a b -> Prism (e, s) (e, t) (e, a) (e, b)
+aside l = withPrism l $ \inj,prj => prism (map inj) $ \(e,s) => bimap (e,) (e,) (prj s)
