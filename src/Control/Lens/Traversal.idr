@@ -8,6 +8,7 @@ import Control.Applicative.Backwards
 import Control.Applicative.Indexing
 import Control.Lens.Optic
 import Control.Lens.Optional
+import Control.Lens.Lens
 import Control.Lens.Prism
 
 %default total
@@ -126,6 +127,21 @@ failover l f x =
   let _ = Bool.Monoid.Any
       (b, y) = traverseOf l ((True,) . f) x
   in  guard b $> y
+
+||| Convert a traversal into a lens over a list of values.
+|||
+||| Note that this is only a true lens if the invariant of the list's length is
+||| maintained. You should avoid mapping `over` this lens with a function that
+||| changes the list's length.
+public export
+partsOf : Traversal s t a a -> Lens s t (List a) (List a)
+partsOf l = lens (runForget $ l $ MkForget pure)
+                  (flip evalState . traverseOf l update)
+  where
+    update : a -> State (List a) a
+    update x = get >>= \case
+      x' :: xs' => put xs' >> pure x'
+      []        => pure x
 
 
 ||| Construct an optional that focuses on the first value of a traversal.

@@ -2,6 +2,7 @@ module Control.Lens.Lens
 
 import Data.Profunctor
 import Data.Profunctor.Yoneda
+import Control.Monad.State
 import Control.Lens.Optic
 import Control.Lens.Equality
 import Control.Lens.Iso
@@ -107,3 +108,252 @@ alongside l l' =
 public export
 fusing : IsIso p => Optic' (Yoneda p) s t a b -> Optic' p s t a b
 fusing @{MkIsIso _} l = proextract . l . propure
+
+
+------------------------------------------------------------------------------
+-- Operators
+------------------------------------------------------------------------------
+
+infixr 4 %%~; infix 4 %%=
+
+infixr 4 <%~; infixr 4 <+~; infixr 4 <*~; infixr 4 <-~; infixr 4 </~
+infixr 4 <||~; infixr 4 <&&~; infixr 4 <<+>~
+
+infixr 4 <<%~; infixr 4 <<.~; infixr 4 <<?~; infixr 4 <<+~; infixr 4 <<*~
+infixr 4 <<-~; infixr 4 <</~; infixr 4 <<||~; infixr 4 <<&&~; infixr 4 <<<+>~
+
+infix 4 <%=; infix 4 <+=; infix 4 <*=; infix 4 <-=; infix 4 </=
+infix 4 <||=; infix 4 <&&=; infix 4 <<+>=
+
+infix 4 <<%=; infix 4 <<.=; infix 4 <<?=; infix 4 <<+=; infix 4 <<*=
+infix 4 <<-=; infix 4 <</=; infix 4 <<||=; infix 4 <<&&=; infix 4 <<<+>=
+
+infixr 2 <<~
+
+
+public export
+(%%~) : Functor f => Lens s t a b -> (a -> f b) -> s -> f t
+(%%~) l = applyStar . l . MkStar {f}
+
+public export
+(%%=) : MonadState s m => Lens s s a b -> (a -> (r, b)) -> m r
+(%%=) = (state . (swap .)) .: (%%~)
+
+
+||| Modify a value with pass-through.
+public export
+(<%~) : Lens s t a b -> (a -> b) -> s -> (b, t)
+(<%~) l f = l %%~ (\x => (x,x)) . f
+
+||| Add a value to the lens with pass-through.
+public export
+(<+~) : Num a => Lens s t a a -> a -> s -> (a, t)
+(<+~) l = (<%~) l . (+)
+
+||| Multiply the lens by a value with pass-through.
+public export
+(<*~) : Num a => Lens s t a a -> a -> s -> (a, t)
+(<*~) l = (<%~) l . (*)
+
+||| Subtract a value from the lens with pass-through.
+public export
+(<-~) : Neg a => Lens s t a a -> a -> s -> (a, t)
+(<-~) l = (<%~) l . flip (-)
+
+||| Divide the lens by a value with pass-through.
+public export
+(</~) : Fractional a => Lens s t a a -> a -> s -> (a, t)
+(</~) l = (<%~) l . flip (/)
+
+||| Logically OR the lens with a constant value with pass-through.
+|||
+||| Like (||) and (||~), this operator takes a lazy second argument.
+public export
+(<||~) : Lens s t Bool Bool -> Lazy Bool -> s -> (Bool, t)
+(<||~) l = (<%~) l . flip (||)
+
+||| Logically AND the lens with a constant value with pass-through.
+|||
+||| Like (&&) and (&&~), this operator takes a lazy second argument.
+public export
+(<&&~) : Lens s t Bool Bool -> Lazy Bool -> s -> (Bool, t)
+(<&&~) l = (<%~) l . flip (&&)
+
+||| Modify an lens's focus with the semigroup/monoid operator with pass-through.
+|||
+||| The constant value is applied to the focus from the right:
+||| ```
+||| l <<+>~ x = l <%~ (<+> x)
+||| ```
+public export
+(<<+>~) : Semigroup a => Lens s t a a -> a -> s -> (a, t)
+(<<+>~) l = (<%~) l . flip (<+>)
+
+
+||| Modify the value of a lens and return the old value.
+public export
+(<<%~) : Lens s t a b -> (a -> b) -> s -> (a, t)
+(<<%~) l f = l %%~ (\x => (x, f x))
+
+||| Set the value of a lens and return the old value.
+public export
+(<<.~) : Lens s t a b -> b -> s -> (a, t)
+(<<.~) l x = l %%~ (,x)
+
+||| Set a lens to `Just` a value and return the old value.
+public export
+(<<?~) : Lens s t a (Maybe b) -> b -> s -> (a, t)
+(<<?~) l = (<<.~) l . Just
+
+||| Add a constant value to a lens's focus and return the old value.
+public export
+(<<+~) : Num a => Lens s t a a -> a -> s -> (a, t)
+(<<+~) l = (<<%~) l . (+)
+
+||| Multiply a lens's focus by a constant value and return the old value.
+public export
+(<<*~) : Num a => Lens s t a a -> a -> s -> (a, t)
+(<<*~) l = (<<%~) l . (*)
+
+||| Subtract a constant value from a lens's focus and return the old value.
+public export
+(<<-~) : Neg a => Lens s t a a -> a -> s -> (a, t)
+(<<-~) l = (<%~) l . flip (-)
+
+||| Divide a lens's focus by a constant value and return the old value.
+public export
+(<</~) : Fractional a => Lens s t a a -> a -> s -> (a, t)
+(<</~) l = (<<%~) l . flip (/)
+
+||| Logically OR a lens's focus by a constant value and return the old value.
+|||
+||| Like (||) and (||~), this operator takes a lazy second argument.
+public export
+(<<||~) : Lens s t Bool Bool -> Lazy Bool -> s -> (Bool, t)
+(<<||~) l = (<<%~) l . flip (||)
+
+||| Logically AND a lens's focus by a constant value and return the old value.
+|||
+||| Like (&&) and (&&~), this operator takes a lazy second argument.
+public export
+(<<&&~) : Lens s t Bool Bool -> Lazy Bool -> s -> (Bool, t)
+(<<&&~) l = (<<%~) l . flip (&&)
+
+||| Modify a lens's focus using the semigroup/monoid operator and return the
+||| old value.
+|||
+||| The constant value is applied to the focus from the right:
+||| ```
+||| l <<<+>~ x = l <<%~ (<+> x)
+||| ```
+public export
+(<<<+>~) : Semigroup a => Lens s t a a -> a -> s -> (a, t)
+(<<<+>~) l = (<<%~) l . flip (<+>)
+
+
+||| Modify within a state monad with pass-through.
+public export
+(<%=) : MonadState s m => Lens s s a b -> (a -> b) -> m b
+(<%=) = (state . (swap .)) .: (<%~)
+
+||| Add a value to the lens into state with pass-through.
+public export
+(<+=) : Num a => MonadState s m => Lens' s a -> a -> m a
+(<+=) = (state . (swap .)) .: (<+~)
+
+||| Multiply a lens's focus into state by a constant value with pass-through.
+public export
+(<*=) : Num a => MonadState s m => Lens' s a -> a -> m a
+(<*=) = (state . (swap .)) .: (<*~)
+
+||| Subtract a value from the lens into state with pass-through.
+public export
+(<-=) : Neg a => MonadState s m => Lens' s a -> a -> m a
+(<-=) = (state . (swap .)) .: (<-~)
+
+||| Divide a lens's focus into state by a constant value with pass-through.
+public export
+(</=) : Fractional a => MonadState s m => Lens' s a -> a -> m a
+(</=) = (state . (swap .)) .: (</~)
+
+||| Logically OR a lens's focus into state with a constant value with pass-through.
+public export
+(<||=) : MonadState s m => Lens s s Bool Bool -> Lazy Bool -> m Bool
+(<||=) = (state . (swap .)) .: (<||~)
+
+||| Logically AND a lens's focus into state with a constant value with pass-through.
+public export
+(<&&=) : MonadState s m => Lens s s Bool Bool -> Lazy Bool -> m Bool
+(<&&=) = (state . (swap .)) .: (<&&~)
+
+||| Modify a lens's focus into state using a semigroup operation with pass-through.
+public export
+(<<+>=) : MonadState s m => Semigroup a => Lens' s a -> a -> m a
+(<<+>=) = (state . (swap .)) .: (<<+>~)
+
+
+||| Modify the value of a lens into state and return the old value.
+public export
+(<<%=) : MonadState s m => Lens s s a b -> (a -> b) -> m a
+(<<%=) = (state . (swap .)) .: (<<%~)
+
+||| Set the value of a lens into state and return the old value.
+public export
+(<<.=) : MonadState s m => Lens s s a b -> b -> m a
+(<<.=) = (state . (swap .)) .: (<<.~)
+
+||| Set a lens into state to `Just` a value and return the old value.
+public export
+(<<?=) : MonadState s m => Lens s s a (Maybe b) -> b -> m a
+(<<?=) = (state . (swap .)) .: (<<?~)
+
+||| Add a value to the lens into state and return the old value.
+public export
+(<<+=) : Num a => MonadState s m => Lens' s a -> a -> m a
+(<<+=) = (state . (swap .)) .: (<<+~)
+
+||| Multiply a lens's focus into state by a constant value and return the old
+||| value.
+public export
+(<<*=) : Num a => MonadState s m => Lens' s a -> a -> m a
+(<<*=) = (state . (swap .)) .: (<<*~)
+
+||| Subtract a value from the lens into state and return the old value.
+public export
+(<<-=) : Neg a => MonadState s m => Lens' s a -> a -> m a
+(<<-=) = (state . (swap .)) .: (<<-~)
+
+||| Divide a lens's focus into state by a constant value and return the old
+||| value.
+public export
+(<</=) : Fractional a => MonadState s m => Lens' s a -> a -> m a
+(<</=) = (state . (swap .)) .: (<</~)
+
+||| Logically OR a lens's focus into state with a constant value and return the
+||| old value.
+public export
+(<<||=) : MonadState s m => Lens s s Bool Bool -> Lazy Bool -> m Bool
+(<<||=) = (state . (swap .)) .: (<<||~)
+
+||| Logically AND a lens's focus into state with a constant value and return the
+||| old value.
+public export
+(<<&&=) : MonadState s m => Lens s s Bool Bool -> Lazy Bool -> m Bool
+(<<&&=) = (state . (swap .)) .: (<<&&~)
+
+||| Modify a lens's focus into state using a semigroup operation and return the
+||| old value.
+public export
+(<<<+>=) : MonadState s m => Semigroup a => Lens' s a -> a -> m a
+(<<<+>=) = (state . (swap .)) .: (<<<+>~)
+
+
+||| Run a monadic action and set the focus of an optic in state to the result.
+||| This is different from `(<~)` in that it also passes though the output of
+||| the action.
+public export
+(<<~) : MonadState s m => Lens s s a b -> m b -> m b
+(<<~) l x = do
+  v <- x
+  modify $ l @{MkIsLens Function} (const v)
+  pure v
