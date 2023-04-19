@@ -1,12 +1,13 @@
 module Control.Lens.Traversal
 
 import Control.Monad.State
-import Data.Zippable
+import Data.List
 import Data.Profunctor
 import Data.Profunctor.Traversing
 import Control.Applicative.Backwards
 import Control.Applicative.Indexing
 import Control.Lens.Optic
+import Control.Lens.Indexed
 import Control.Lens.Optional
 import Control.Lens.Lens
 import Control.Lens.Prism
@@ -39,16 +40,36 @@ public export
 0 Traversal' : (s,a : Type) -> Type
 Traversal' = Simple Traversal
 
+public export
+0 IndexedTraversal : (i,s,t,a,b : Type) -> Type
+IndexedTraversal = IndexedOptic IsTraversal
+
+public export
+0 IndexedTraversal' : (i,s,a : Type) -> Type
+IndexedTraversal' = Simple . IndexedTraversal
+
 
 ------------------------------------------------------------------------------
 -- Utilities for traversals
 ------------------------------------------------------------------------------
 
 
+public export
+iordinal : Traversal s t a b -> IndexedTraversal Nat s t a b
+iordinal l @{MkIsTraversal _} @{ind} = wander (func . curry) . indexed @{ind}
+  where
+    func : forall f. Applicative f => (Nat -> a -> f b) -> s -> f t
+    func = indexing $ applyStar . l . MkStar {f = Indexing f}
+
+
 ||| Derive a traversal from a `Traversable` implementation.
 public export
 traversed : Traversable t => Traversal (t a) (t b) a b
 traversed @{_} @{MkIsTraversal _} = traverse'
+
+public export
+itraversed : Traversable t => IndexedTraversal Nat (t a) (t b) a b
+itraversed = iordinal traversed
 
 ||| Contstruct a traversal over a `Bitraversable` container with matching types.
 public export
@@ -71,10 +92,18 @@ public export
 traverseOf : Applicative f => Traversal s t a b -> (a -> f b) -> s -> f t
 traverseOf l = applyStar . l . MkStar {f}
 
+public export
+itraverseOf : Applicative f => IndexedTraversal i s t a b -> (i -> a -> f b) -> s -> f t
+itraverseOf l = traverseOf (l @{%search} @{Idxed}) . uncurry
+
 ||| A version of `traverseOf` but with the arguments flipped.
 public export
 forOf : Applicative f => Traversal s t a b -> s -> (a -> f b) -> f t
-forOf l = flip $ traverseOf l
+forOf = flip . traverseOf
+
+public export
+iforOf : Applicative f => IndexedTraversal i s t a b -> s -> (i -> a -> f b) -> f t
+iforOf = flip . itraverseOf
 
 ||| Evaluate each computation within the traversal and collect the results.
 public export
@@ -128,6 +157,16 @@ failover l f x =
       (b, y) = traverseOf l ((True,) . f) x
   in  guard b $> y
 
+public export
+ifailover : Alternative f => IndexedTraversal i s t a b -> (i -> a -> b) -> s -> f t
+ifailover l = failover (l @{%search} @{Idxed}) . uncurry
+
+
+partsOf_update : a -> State (List a) a
+partsOf_update x = get >>= \case
+  x' :: xs' => put xs' >> pure x'
+  []        => pure x
+
 ||| Convert a traversal into a lens over a list of values.
 |||
 ||| Note that this is only a true lens if the invariant of the list's length is
@@ -136,12 +175,12 @@ failover l f x =
 public export
 partsOf : Traversal s t a a -> Lens s t (List a) (List a)
 partsOf l = lens (runForget $ l $ MkForget pure)
-                  (flip evalState . traverseOf l update)
-  where
-    update : a -> State (List a) a
-    update x = get >>= \case
-      x' :: xs' => put xs' >> pure x'
-      []        => pure x
+                  (flip evalState . traverseOf l partsOf_update)
+
+public export
+ipartsOf : IndexedTraversal i s t a a -> IndexedLens (List i) s t (List a) (List a)
+ipartsOf l = ilens (unzip . (runForget $ l @{%search} @{Idxed} $ MkForget pure))
+                   (flip evalState . itraverseOf l (const partsOf_update))
 
 
 ||| Construct an optional that focuses on the first value of a traversal.

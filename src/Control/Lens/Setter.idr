@@ -7,6 +7,7 @@ import Data.Profunctor.Traversing
 import Data.Profunctor.Mapping
 import Control.Monad.State
 import Control.Lens.Optic
+import Control.Lens.Indexed
 import Control.Lens.Traversal
 
 %default total
@@ -44,6 +45,14 @@ public export
 0 Setter' : (s,a : Type) -> Type
 Setter' = Simple Setter
 
+public export
+0 IndexedSetter : (i,s,t,a,b : Type) -> Type
+IndexedSetter = IndexedOptic IsSetter
+
+public export
+0 IndexedSetter' : (i,s,a : Type) -> Type
+IndexedSetter' = Simple . IndexedSetter
+
 
 ------------------------------------------------------------------------------
 -- Utilities for setters
@@ -54,6 +63,10 @@ Setter' = Simple Setter
 public export
 sets : ((a -> b) -> s -> t) -> Setter s t a b
 sets f @{MkIsSetter _} = roam f
+
+public export
+isets : ((i -> a -> b) -> s -> t) -> IndexedSetter i s t a b
+isets f @{MkIsSetter _} @{ind} = roam (f . curry) . indexed @{ind}
 
 ||| Derive a setter from a `Functor` implementation.
 public export
@@ -81,6 +94,17 @@ public export
 (%~) = over
 
 
+public export
+iover : IndexedSetter i s t a b -> (i -> a -> b) -> s -> t
+iover l = l @{MkIsSetter Function} @{Idxed} . uncurry
+
+infixr 4 %@~
+
+public export
+(%@~) : IndexedSetter i s t a b -> (i -> a -> b) -> s -> t
+(%@~) = iover
+
+
 ||| Set the focus or focuses of an optic to a constant value.
 public export
 set : Setter s t a b -> b -> s -> t
@@ -96,15 +120,27 @@ public export
 (.~) = set
 
 
+public export
+iset : IndexedSetter i s t a b -> (i -> b) -> s -> t
+iset l = iover l . (const .)
+
+infix 4 .@~
+
+public export
+(.@~) : IndexedSetter i s t a b -> (i -> b) -> s -> t
+(.@~) = iset
+
+
 ------------------------------------------------------------------------------
--- Operators
+-- More operators
 ------------------------------------------------------------------------------
 
 infixr 4 ?~; infixr 4 <.~; infixr 4 <?~; infixr 4 +~; infixr 4 *~; infixr 4 -~
 infixr 4 /~; infixr 4 ||~; infixr 4 &&~; infixr 4 <+>~
 
-infix 4 %=; infix 4 .=; infix 4 ?=; infix 4 <.=; infix 4 <?=; infix 4 +=
-infix 4 *=; infix 4 -=; infix 4 /=; infix 4 ||=; infix 4 &&=; infixr 4 <+>=
+infix 4 %=; infix 4 %@=; infix 4 .=; infix 4 .@=; infix 4 ?=; infix 4 <.=
+infix 4 <?=; infix 4 +=; infix 4 *=; infix 4 -=; infix 4 /=; infix 4 ||=
+infix 4 &&=; infixr 4 <+>=
 
 infixr 4 <~
 
@@ -175,10 +211,18 @@ public export
 (%=) : MonadState s m => Setter s s a b -> (a -> b) -> m ()
 (%=) = modify .: over
 
+public export
+(%@=) : MonadState s m => IndexedSetter i s s a b -> (i -> a -> b) -> m ()
+(%@=) = modify .: iover
+
 ||| Set the focus of an optic within a state monad.
 public export
 (.=) : MonadState s m => Setter s s a b -> b -> m ()
 (.=) = modify .: set
+
+public export
+(.@=) : MonadState s m => IndexedSetter i s s a b -> (i -> b) -> m ()
+(.@=) = modify .: iset
 
 ||| Set the focus of an optic within a state monad to `Just` a value.
 public export

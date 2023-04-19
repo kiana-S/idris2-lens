@@ -4,6 +4,7 @@ import Data.Profunctor
 import Data.Profunctor.Yoneda
 import Control.Monad.State
 import Control.Lens.Optic
+import Control.Lens.Indexed
 import Control.Lens.Equality
 import Control.Lens.Iso
 
@@ -48,6 +49,14 @@ public export
 0 Lens' : (s,a : Type) -> Type
 Lens' = Simple Lens
 
+public export
+0 IndexedLens : (i,s,t,a,b : Type) -> Type
+IndexedLens = IndexedOptic IsLens
+
+public export
+0 IndexedLens' : (i,s,a : Type) -> Type
+IndexedLens' = Simple . IndexedLens
+
 
 ------------------------------------------------------------------------------
 -- Utilities for lenses
@@ -62,6 +71,16 @@ Lens' = Simple Lens
 public export
 lens : (get : s -> a) -> (set : s -> b -> t) -> Lens s t a b
 lens get set @{MkIsLens _} = dimap (\x => (x, get x)) (uncurry set) . second
+
+public export
+ilens : (get : s -> (i, a)) -> (set : s -> b -> t) -> IndexedLens i s t a b
+ilens get set @{_} @{ind} = lens get set . indexed @{ind}
+
+
+public export
+withIndex : i -> Lens s t a b -> IndexedLens i s t a b
+withIndex i l @{MkIsLens _} @{ind} = l . lmap (i,) . indexed @{ind}
+
 
 ||| Extract getter and setter functions from a lens.
 public export
@@ -83,8 +102,8 @@ withLens l f = uncurry f (getLens l)
 
 ||| `Void` vacuously "contains" a value of any other type.
 public export
-devoid : Lens Void Void a b
-devoid @{MkIsLens _} = dimap absurd snd . first
+devoid : IndexedLens i Void Void a b
+devoid @{MkIsLens _} = ilens absurd const
 
 ||| All values contain a unit.
 public export
@@ -114,18 +133,19 @@ fusing @{MkIsIso _} l = proextract . l . propure
 -- Operators
 ------------------------------------------------------------------------------
 
-infixr 4 %%~; infix 4 %%=
+infixr 4 %%~; infix 4 %%=; infix 4 %%@~; infix 4 %%@=
 
-infixr 4 <%~; infixr 4 <+~; infixr 4 <*~; infixr 4 <-~; infixr 4 </~
-infixr 4 <||~; infixr 4 <&&~; infixr 4 <<+>~
+infixr 4 <%~; infixr 4 <%@~; infixr 4 <+~; infixr 4 <*~; infixr 4 <-~
+infixr 4 </~; infixr 4 <||~; infixr 4 <&&~; infixr 4 <<+>~
 
-infixr 4 <<%~; infixr 4 <<.~; infixr 4 <<?~; infixr 4 <<+~; infixr 4 <<*~
-infixr 4 <<-~; infixr 4 <</~; infixr 4 <<||~; infixr 4 <<&&~; infixr 4 <<<+>~
+infixr 4 <<%~; infixr 4 <<%@~; infixr 4 <<.~; infixr 4 <<?~; infixr 4 <<+~
+infixr 4 <<*~; infixr 4 <<-~; infixr 4 <</~; infixr 4 <<||~; infixr 4 <<&&~
+infixr 4 <<<+>~
 
-infix 4 <%=; infix 4 <+=; infix 4 <*=; infix 4 <-=; infix 4 </=
+infix 4 <%=; infix 4 <%@=; infix 4 <+=; infix 4 <*=; infix 4 <-=; infix 4 </=
 infix 4 <||=; infix 4 <&&=; infix 4 <<+>=
 
-infix 4 <<%=; infix 4 <<.=; infix 4 <<?=; infix 4 <<+=; infix 4 <<*=
+infix 4 <<%=; infix 4 <<%@=; infix 4 <<.=; infix 4 <<?=; infix 4 <<+=; infix 4 <<*=
 infix 4 <<-=; infix 4 <</=; infix 4 <<||=; infix 4 <<&&=; infix 4 <<<+>=
 
 infixr 2 <<~
@@ -139,11 +159,25 @@ public export
 (%%=) : MonadState s m => Lens s s a b -> (a -> (r, b)) -> m r
 (%%=) = (state . (swap .)) .: (%%~)
 
+public export
+(%%@~) : Functor f => IndexedLens i s t a b -> (i -> a -> f b) -> s -> f t
+(%%@~) l = applyStar . l {p=Star f} @{%search} @{Idxed}
+            . MkStar . uncurry
+
+public export
+(%%@=) : MonadState s m => IndexedLens i s s a b -> (i -> a -> (r, b)) -> m r
+(%%@=) = (state . (swap .)) .: (%%@~)
+
 
 ||| Modify a value with pass-through.
 public export
 (<%~) : Lens s t a b -> (a -> b) -> s -> (b, t)
 (<%~) l f = l %%~ (\x => (x,x)) . f
+
+||| Modify a value with pass-through, having access to the index.
+public export
+(<%@~) : IndexedLens i s t a b -> (i -> a -> b) -> s -> (b, t)
+(<%@~) l f = l %%@~ (\x => (x,x)) .: f
 
 ||| Add a value to the lens with pass-through.
 public export
@@ -194,6 +228,10 @@ public export
 public export
 (<<%~) : Lens s t a b -> (a -> b) -> s -> (a, t)
 (<<%~) l f = l %%~ (\x => (x, f x))
+
+||| Modify the value of an indexed lens and return the old value.
+(<<%@~) : IndexedLens i s t a b -> (i -> a -> b) -> s -> (a, t)
+(<<%@~) l f = l %%@~ (\i,x => (x, f i x))
 
 ||| Set the value of a lens and return the old value.
 public export
@@ -256,6 +294,11 @@ public export
 (<%=) : MonadState s m => Lens s s a b -> (a -> b) -> m b
 (<%=) = (state . (swap .)) .: (<%~)
 
+||| Modify within a state monad with pass-through, having access to the index.
+public export
+(<%@=) : MonadState s m => IndexedLens i s s a b -> (i -> a -> b) -> m b
+(<%@=) = (state . (swap .)) .: (<%@~)
+
 ||| Add a value to the lens into state with pass-through.
 public export
 (<+=) : Num a => MonadState s m => Lens' s a -> a -> m a
@@ -296,6 +339,11 @@ public export
 public export
 (<<%=) : MonadState s m => Lens s s a b -> (a -> b) -> m a
 (<<%=) = (state . (swap .)) .: (<<%~)
+
+||| Modify the value of an indexed lens into state and return the old value.
+public export
+(<<%@=) : MonadState s m => IndexedLens i s s a b -> (i -> a -> b) -> m a
+(<<%@=) = (state . (swap .)) .: (<<%@~)
 
 ||| Set the value of a lens into state and return the old value.
 public export

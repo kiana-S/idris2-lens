@@ -4,6 +4,7 @@ import public Control.Lens.At
 import public Control.Lens.Equality
 import public Control.Lens.Fold
 import public Control.Lens.Getter
+import public Control.Lens.Indexed
 import public Control.Lens.Iso
 import public Control.Lens.Lens
 import public Control.Lens.Optic

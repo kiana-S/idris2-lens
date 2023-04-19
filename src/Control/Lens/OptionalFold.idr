@@ -4,6 +4,7 @@ import Data.Bicontravariant
 import Data.Profunctor
 import Data.Profunctor.Costrong
 import Control.Lens.Optic
+import Control.Lens.Indexed
 import Control.Lens.Optional
 import Control.Lens.Getter
 
@@ -35,6 +36,10 @@ public export
 0 OptionalFold : (s,a : Type) -> Type
 OptionalFold = Simple (Optic IsOptFold)
 
+public export
+0 IndexedOptionalFold : (i,s,a : Type) -> Type
+IndexedOptionalFold = Simple . IndexedOptic IsOptFold
+
 
 ------------------------------------------------------------------------------
 -- Utilities for OptionalFolds
@@ -46,6 +51,12 @@ public export
 folding : (s -> Maybe a) -> OptionalFold s a
 folding f @{MkIsOptFold _} =
   contrabimap (\x => maybe (Left x) Right (f x)) Left . right
+
+public export
+ifolding : (s -> Maybe (i, a)) -> IndexedOptionalFold i s a
+ifolding f @{MkIsOptFold _} @{ind} =
+  contrabimap (\x => maybe (Left x) Right (f x)) Left . right . indexed @{ind}
+
 
 ||| Construct an `OptionalFold` that can be used to filter the focuses
 ||| of another optic.

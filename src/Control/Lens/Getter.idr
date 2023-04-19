@@ -4,6 +4,7 @@ import Data.Bicontravariant
 import Data.Profunctor
 import Data.Profunctor.Costrong
 import Control.Lens.Optic
+import Control.Lens.Indexed
 import Control.Lens.Lens
 
 %default total
@@ -31,6 +32,10 @@ public export
 0 Getter : (s,a : Type) -> Type
 Getter = Simple (Optic IsGetter)
 
+public export
+0 IndexedGetter : (i,s,a : Type) -> Type
+IndexedGetter = Simple . IndexedOptic IsGetter
+
 
 ------------------------------------------------------------------------------
 -- Utilities for getters
@@ -42,6 +47,10 @@ public export
 to : (s -> a) -> Getter s a
 to f @{MkIsGetter _} = lmap f . rphantom
 
+public export
+ito : (s -> (i, a)) -> IndexedGetter i s a
+ito f @{MkIsGetter _} @{ind} = lmap f . rphantom . indexed @{ind}
+
 ||| Construct a getter that always returns a constant value.
 public export
 like : a -> Getter s a
@@ -50,7 +59,7 @@ like = to . const
 
 ||| Access the value of an optic and apply a function to it, returning the result.
 public export
-views : Getter s a -> (a -> r) -> (s -> r)
+views : Getter s a -> (a -> r) -> s -> r
 views l = runForget . l . MkForget
 
 ||| Access the focus value of an optic, particularly a `Getter`.
@@ -58,8 +67,17 @@ public export
 view : Getter s a -> s -> a
 view l = views l id
 
+public export
+iviews : IndexedGetter i s a -> (i -> a -> r) -> s -> r
+iviews l = runForget . l @{%search} @{Idxed} . MkForget . uncurry
+
+public export
+iview : IndexedGetter i s a -> s -> (i, a)
+iview l = runForget $ l @{%search} @{Idxed} $ MkForget id
+
 
 infixl 8 ^.
+infixl 8 ^@.
 
 ||| Access the focus value of an optic, particularly a `Getter`.
 |||
@@ -67,3 +85,7 @@ infixl 8 ^.
 public export
 (^.) : s -> Getter s a -> a
 (^.) x l = view l x
+
+public export
+(^@.) : s -> IndexedGetter i s a -> (i, a)
+(^@.) x l = iview l x

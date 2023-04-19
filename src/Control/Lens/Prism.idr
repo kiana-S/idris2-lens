@@ -2,6 +2,7 @@ module Control.Lens.Prism
 
 import Data.Profunctor
 import Control.Lens.Optic
+import Control.Lens.Indexed
 import Control.Lens.Iso
 
 %default total
@@ -37,6 +38,14 @@ public export
 0 Prism' : (s,a : Type) -> Type
 Prism' = Simple Prism
 
+public export
+0 IndexedPrism : (i,s,t,a,b : Type) -> Type
+IndexedPrism = IndexedOptic IsPrism
+
+public export
+0 IndexedPrism' : (i,s,a : Type) -> Type
+IndexedPrism' = Simple . IndexedPrism
+
 
 ------------------------------------------------------------------------------
 -- Utilities for prisms
@@ -52,6 +61,14 @@ prism inj prj @{MkIsPrism _} = dimap prj (either id inj) . right
 public export
 prism' : (b -> s) -> (s -> Maybe a) -> Prism s s a b
 prism' inj prj = prism inj (\x => maybe (Left x) Right (prj x))
+
+public export
+iprism : (b -> t) -> (s -> Either t (i, a)) -> IndexedPrism i s t a b
+iprism inj prj @{_} @{ind} = prism inj prj . indexed @{ind}
+
+public export
+iprism' : (b -> s) -> (s -> Maybe (i, a)) -> IndexedPrism i s s a b
+iprism' inj prj = iprism inj (\x => maybe (Left x) Right (prj x))
 
 
 ||| Extract injection and projection functions from a prism.

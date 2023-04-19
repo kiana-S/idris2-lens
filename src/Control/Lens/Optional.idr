@@ -2,6 +2,7 @@ module Control.Lens.Optional
 
 import Data.Profunctor
 import Control.Lens.Optic
+import Control.Lens.Indexed
 import Control.Lens.Lens
 import Control.Lens.Prism
 
@@ -38,6 +39,14 @@ public export
 0 Optional' : (s,a : Type) -> Type
 Optional' = Simple Optional
 
+public export
+0 IndexedOptional : (i,s,t,a,b : Type) -> Type
+IndexedOptional = IndexedOptic IsOptional
+
+public export
+0 IndexedOptional' : (i,s,a : Type) -> Type
+IndexedOptional' = Simple . IndexedOptional
+
 
 ------------------------------------------------------------------------------
 -- Utilities for Optionals
@@ -61,10 +70,19 @@ public export
 optional' : (s -> Maybe a) -> (s -> b -> s) -> Optional s s a b
 optional' prj = optional (\x => maybe (Left x) Right (prj x))
 
+public export
+ioptional : (s -> Either t (i, a)) -> (s -> b -> t) -> IndexedOptional i s t a b
+ioptional prj set @{_} @{ind} = optional prj set . indexed @{ind}
+
+public export
+ioptional' : (s -> Maybe (i, a)) -> (s -> b -> s) -> IndexedOptional i s s a b
+ioptional' prj = ioptional (\x => maybe (Left x) Right (prj x))
+
+
 ||| The trivial optic that has no focuses.
 public export
-ignored : Optional s s a b
-ignored = optional' (const Nothing) const
+ignored : IndexedOptional i s s a b
+ignored = ioptional' (const Nothing) const
 
 
 ||| Extract projection and setter functions from an optional.
@@ -93,5 +111,5 @@ withOptional l f = uncurry f (getOptional l)
 ||| Retrieve the focus value of an optional, or allow its type to change if there
 ||| is no focus.
 public export
-matching : Prism s t a b -> s -> Either t a
-matching = snd . getPrism
+matching : Optional s t a b -> s -> Either t a
+matching = fst . getOptional
