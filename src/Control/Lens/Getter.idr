@@ -36,6 +36,7 @@ public export
 0 Getter : (s,a : Type) -> Type
 Getter = Simple (Optic IsGetter)
 
+||| An indexed getter returns an index while getting.
 public export
 0 IndexedGetter : (i,s,a : Type) -> Type
 IndexedGetter = Simple . IndexedOptic IsGetter
@@ -51,6 +52,7 @@ public export
 to : (s -> a) -> Getter s a
 to f @{MkIsGetter _} = lmap f . rphantom
 
+||| Construct an indexed getter from a function.
 public export
 ito : (s -> (i, a)) -> IndexedGetter i s a
 ito f @{MkIsGetter _} @{ind} = lmap f . rphantom . indexed @{ind}

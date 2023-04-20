@@ -44,10 +44,13 @@ public export
 0 Traversal' : (s,a : Type) -> Type
 Traversal' = Simple Traversal
 
+||| An indexed traversal allows access to the indices of the values as they are
+||| being modified.
 public export
 0 IndexedTraversal : (i,s,t,a,b : Type) -> Type
 IndexedTraversal = IndexedOptic IsTraversal
 
+||| `IndexedTraversal'` is the `Simple` version of `IndexedTraversal`.
 public export
 0 IndexedTraversal' : (i,s,a : Type) -> Type
 IndexedTraversal' = Simple . IndexedTraversal
@@ -58,6 +61,8 @@ IndexedTraversal' = Simple . IndexedTraversal
 ------------------------------------------------------------------------------
 
 
+||| Convert a traversal into an indexed traversal, adding an index for the
+||| ordinal position of the focus.
 public export
 iordinal : Num i => Traversal s t a b -> IndexedTraversal i s t a b
 iordinal @{_} l @{MkIsTraversal _} @{ind} = wander (func . curry) . indexed @{ind}
@@ -71,6 +76,7 @@ public export
 traversed : Traversable t => Traversal (t a) (t b) a b
 traversed @{_} @{MkIsTraversal _} = traverse'
 
+||| Derive an indexed traversal from a `Traversable` implementation.
 public export
 itraversed : Num i => Traversable t => IndexedTraversal i (t a) (t b) a b
 itraversed = iordinal traversed
@@ -96,6 +102,8 @@ public export
 traverseOf : Applicative f => Traversal s t a b -> (a -> f b) -> s -> f t
 traverseOf l = applyStar . l . MkStar {f}
 
+||| Map each focus of a traversal to a computation with acces to the index,
+||| evaluate those computations and combine the results.
 public export
 itraverseOf : Applicative f => IndexedTraversal i s t a b -> (i -> a -> f b) -> s -> f t
 itraverseOf l = traverseOf (l @{%search} @{Idxed}) . uncurry
@@ -105,6 +113,7 @@ public export
 forOf : Applicative f => Traversal s t a b -> s -> (a -> f b) -> f t
 forOf = flip . traverseOf
 
+||| A version of `itraverseOf` but with the arguments flipped.
 public export
 iforOf : Applicative f => IndexedTraversal i s t a b -> s -> (i -> a -> f b) -> f t
 iforOf = flip . itraverseOf
@@ -161,6 +170,7 @@ failover l f x =
       (b, y) = traverseOf l ((True,) . f) x
   in  guard b $> y
 
+||| Try to map over an indexed traversal, failing if the traversal has no focuses.
 public export
 ifailover : Alternative f => IndexedTraversal i s t a b -> (i -> a -> b) -> s -> f t
 ifailover l = failover (l @{%search} @{Idxed}) . uncurry
@@ -181,6 +191,12 @@ partsOf : Traversal s t a a -> Lens s t (List a) (List a)
 partsOf l = lens (runForget $ l $ MkForget pure)
                   (flip evalState . traverseOf l partsOf_update)
 
+||| Convert an indexed traversal into an indexed lens over a list of values, with
+||| access to a list of indices.
+|||
+||| Note that this is only a true lens if the invariant of the list's length is
+||| maintained. You should avoid mapping `over` this lens with a function that
+||| changes the list's length.
 public export
 ipartsOf : IndexedTraversal i s t a a -> IndexedLens (List i) s t (List a) (List a)
 ipartsOf l = ilens (unzip . (runForget $ l @{%search} @{Idxed} $ MkForget pure))
@@ -197,6 +213,18 @@ singular l = optional' (runForget $ l (MkForget Just)) set
     set : s -> a -> s
     set str x = evalState True $ traverseOf l
       (\y => if !get then put False $> x else pure y) str
+
+||| Construct an indexed optional that focuses on the first value of an
+||| indexed traversal.
+|||
+||| For the fold version of this, see `ipre`.
+public export
+isingular : IndexedTraversal' i s a -> IndexedOptional' i s a
+isingular l = ioptional' (runForget $ l @{%search} @{Idxed} (MkForget Just)) set
+  where
+    set : s -> a -> s
+    set str x = evalState True $ itraverseOf l
+      (\_,y => if !get then put False $> x else pure y) str
 
 ||| Filter the focuses of a traversal by a predicate on their ordinal positions.
 public export

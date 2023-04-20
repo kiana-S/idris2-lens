@@ -42,6 +42,7 @@ public export
 0 Fold : (s,a : Type) -> Type
 Fold = Simple (Optic IsFold)
 
+||| An indexed fold returns indices while getting.
 public export
 0 IndexedFold : (i,s,a : Type) -> Type
 IndexedFold = Simple . IndexedOptic IsFold
@@ -73,6 +74,7 @@ public export
 folding : Foldable f => (s -> f a) -> Fold s a
 folding @{_} f @{MkIsFold _} = rphantom . contramapFst f . wander traverse_
 
+||| Construct an indexed fold from a function into a foldable container.
 public export
 ifolding : Foldable f => (s -> f (i, a)) -> IndexedFold i s a
 ifolding @{_} f @{MkIsFold _} @{ind} =
@@ -109,6 +111,8 @@ public export
 foldMapOf : Monoid m => Fold s a -> (a -> m) -> s -> m
 foldMapOf l = runForget . l . MkForget
 
+||| Map each focus of an optic to a monoid value with access to the index and
+||| combine them.
 public export
 ifoldMapOf : Monoid m => IndexedFold i s a -> (i -> a -> m) -> s -> m
 ifoldMapOf l = runForget . l @{%search} @{Idxed} . MkForget . uncurry
@@ -119,6 +123,8 @@ public export
 foldrOf : Fold s a -> (a -> acc -> acc) -> acc -> s -> acc
 foldrOf l = flip . foldMapOf @{MkMonoid @{MkSemigroup (.)} id} l
 
+||| Combine the focuses of an optic using the provided function with access to
+||| the index, starting from the right.
 public export
 ifoldrOf : IndexedFold i s a -> (i -> a -> acc -> acc) -> acc -> s -> acc
 ifoldrOf l = flip . ifoldMapOf @{MkMonoid @{MkSemigroup (.)} id} l
@@ -129,6 +135,8 @@ public export
 foldlOf : Fold s a -> (acc -> a -> acc) -> acc -> s -> acc
 foldlOf l = flip . foldMapOf @{MkMonoid @{MkSemigroup $ flip (.)} id} l . flip
 
+||| Combine the focuses of an optic using the provided function with access to
+||| the index, starting from the left.
 public export
 ifoldlOf : IndexedFold i s a -> (i -> acc -> a -> acc) -> acc -> s -> acc
 ifoldlOf l = flip . ifoldMapOf @{MkMonoid @{MkSemigroup $ flip (.)} id} l . (flip .)
@@ -158,6 +166,8 @@ traverseOf_ l f =
   let _ = MkMonoid @{MkSemigroup (*>)} (pure ())
   in foldMapOf l (ignore . f)
 
+||| Map each focus of an optic to a computation with access to the index,
+||| evaluate those computations and discard the results.
 public export
 itraverseOf_ : Applicative f => IndexedFold i s a -> (i -> a -> f b) -> s -> f ()
 itraverseOf_ l f =
@@ -169,6 +179,7 @@ public export
 forOf_ : Applicative f => Fold s a -> s -> (a -> f b) -> f ()
 forOf_ = flip . traverseOf_
 
+||| A version of `itraverseOf_` with the arguments flipped.
 public export
 iforOf_ : Applicative f => IndexedFold i s a -> s -> (i -> a -> f b) -> f ()
 iforOf_ = flip . itraverseOf_
@@ -188,10 +199,20 @@ public export
 allOf : Fold s a -> (a -> Bool) -> s -> Bool
 allOf = foldMapOf @{All}
 
+||| Return `True` if all focuses of the indexed optic satisfy the predicate.
+public export
+iallOf : IndexedFold i s a -> (i -> a -> Bool) -> s -> Bool
+iallOf = ifoldMapOf @{All}
+
 ||| Return `True` if any focuses of the optic satisfy the predicate.
 public export
 anyOf : Fold s a -> (a -> Bool) -> s -> Bool
 anyOf = foldMapOf @{Any}
+
+||| Return `True` if any focuses of the indexed optic satisfy the predicate.
+public export
+ianyOf : IndexedFold i s a -> (i -> a -> Bool) -> s -> Bool
+ianyOf = ifoldMapOf @{Any}
 
 
 ||| Return `True` if the element occurs in the focuses of the optic.
@@ -212,6 +233,10 @@ public export
 firstOf : Fold s a -> s -> Maybe a
 firstOf l = foldMapOf l Just
 
+||| Access the first focus value and index of an indexed optic, returning Nothing
+||| if there are no focuses.
+|||
+||| This is identical to `ipreview`.
 public export
 ifirstOf : IndexedFold i s a -> s -> Maybe (i, a)
 ifirstOf l = runForget $ l @{%search} @{Idxed} $ MkForget Just
@@ -222,6 +247,8 @@ public export
 lastOf : Fold s a -> s -> Maybe a
 lastOf l = foldMapOf @{MkMonoid @{MkSemigroup $ flip (<+>)} neutral} l Just
 
+||| Access the last focus value and index of an indexed optic, returning Nothing
+||| if there are no focuses.
 public export
 ilastOf : IndexedFold i s a -> s -> Maybe (i, a)
 ilastOf l =
@@ -271,12 +298,20 @@ public export
 (^?) x l = preview l x
 
 
+||| Access the first focus value and index of an indexed optic, returning Nothing
+||| if there are no focuses.
+|||
+||| This is an alias for `ifirstOf`.
 public export
 ipreview : IndexedFold i s a -> s -> Maybe (i, a)
 ipreview = ifirstOf
 
 infixl 8 ^@?
 
+||| Access the first focus value and index of an indexed optic, returning Nothing
+||| if there are no focuses.
+|||
+||| This is the operator form of `ipreview`.
 public export
 (^@?) : s -> IndexedFold i s a -> Maybe (i, a)
 (^@?) x l = ipreview l x
@@ -289,6 +324,10 @@ public export
 pre : Fold s a -> OptionalFold s a
 pre = folding . preview
 
+||| Convert an `IndexedFold` into an `IndexedOptionalFold` that accesses the
+||| first focus element.
+|||
+||| For the traversal version of this, see `isingular`.
 public export
 ipre : IndexedFold i s a -> IndexedOptionalFold i s a
 ipre = ifolding . ipreview
@@ -309,12 +348,16 @@ public export
 (^..) s l = toListOf l s
 
 
+||| Return a list of all focuses and indices of an indexed fold.
 public export
 itoListOf : IndexedFold i s a -> s -> List (i, a)
 itoListOf l = ifoldrOf l ((::) .: (,)) []
 
 infixl 8 ^@..
 
+||| Return a list of all focuses and indices of an indexed fold.
+|||
+||| This is the operator form of `itoListOf`.
 public export
 (^@..) : s -> IndexedFold i s a -> List (i, a)
 (^@..) x l = itoListOf l x

@@ -49,10 +49,12 @@ public export
 0 Setter' : (s,a : Type) -> Type
 Setter' = Simple Setter
 
+||| An indexed setter allows access to an index while setting.
 public export
 0 IndexedSetter : (i,s,t,a,b : Type) -> Type
 IndexedSetter = IndexedOptic IsSetter
 
+||| `IndexedSetter'` is the `Simple` version of `IndexedSetter`.
 public export
 0 IndexedSetter' : (i,s,a : Type) -> Type
 IndexedSetter' = Simple . IndexedSetter
@@ -68,6 +70,7 @@ public export
 sets : ((a -> b) -> s -> t) -> Setter s t a b
 sets f @{MkIsSetter _} = roam f
 
+||| Construct an indexed setter from a modifying function.
 public export
 isets : ((i -> a -> b) -> s -> t) -> IndexedSetter i s t a b
 isets f @{MkIsSetter _} @{ind} = roam (f . curry) . indexed @{ind}
@@ -98,12 +101,16 @@ public export
 (%~) = over
 
 
+||| Modify the focus or focuses of an indexed optic, having access to the index.
 public export
 iover : IndexedSetter i s t a b -> (i -> a -> b) -> s -> t
 iover l = l @{MkIsSetter Function} @{Idxed} . uncurry
 
 infixr 4 %@~
 
+||| Modify the focus or focuses of an indexed optic, having access to the index.
+|||
+||| This is the operator form of `iover`.
 public export
 (%@~) : IndexedSetter i s t a b -> (i -> a -> b) -> s -> t
 (%@~) = iover
@@ -124,12 +131,16 @@ public export
 (.~) = set
 
 
+||| Set the focus or focuses of an indexed optic, having access to the index.
 public export
 iset : IndexedSetter i s t a b -> (i -> b) -> s -> t
 iset l = iover l . (const .)
 
 infix 4 .@~
 
+||| Set the focus or focuses of an indexed optic, having access to the index.
+|||
+||| This is the operator form of `iset`.
 public export
 (.@~) : IndexedSetter i s t a b -> (i -> b) -> s -> t
 (.@~) = iset
@@ -215,6 +226,7 @@ public export
 (%=) : MonadState s m => Setter s s a b -> (a -> b) -> m ()
 (%=) = modify .: over
 
+||| Modify the focus of an optic within a state monad, having access to the index.
 public export
 (%@=) : MonadState s m => IndexedSetter i s s a b -> (i -> a -> b) -> m ()
 (%@=) = modify .: iover
@@ -224,6 +236,7 @@ public export
 (.=) : MonadState s m => Setter s s a b -> b -> m ()
 (.=) = modify .: set
 
+||| Set the focus of an optic within a state monad, having access to the index.
 public export
 (.@=) : MonadState s m => IndexedSetter i s s a b -> (i -> b) -> m ()
 (.@=) = modify .: iset

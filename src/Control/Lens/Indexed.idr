@@ -83,7 +83,8 @@ indexedIso @{MkIsIso _} = MkIsIso %search
 
 
 
-
+||| Compose two indexed optics, using a function to combine the indices of each
+||| optic.
 public export
 icompose : IsIso p => (i -> j -> k) ->
             IndexedOptic' p i s t a b -> IndexedOptic' (Indexed i p) j a b a' b' ->
@@ -96,24 +97,36 @@ infixr 9 <.>
 infixr 9 .>
 infixr 9 <.
 
+||| Compose two indexed optics, returning an optic indexed by a pair of indices.
+|||
+||| Mnemonically, the angle brackets point to the fact that we want to preserve
+||| both indices.
 public export
 (<.>) : IsIso p => IndexedOptic' p i s t a b -> IndexedOptic' (Indexed i p) j a b a' b' ->
                     IndexedOptic' p (i, j) s t a' b'
 (<.>) = icompose (,)
 
+||| Compose a non-indexed optic with an indexed optic.
+|||
+||| Mnemonically, the angle bracket points to the index that we want to preserve.
 public export
 (.>) : Optic' p s t a b -> IndexedOptic' p i a b a' b' -> IndexedOptic' p i s t a' b'
 (.>) l l' = l . l'
 
+||| Compose an indexed optic with a non-indexed optic.
+|||
+||| Mnemonically, the angle bracket points to the index that we want to preserve.
 public export
 (<.) : IndexedOptic' p i s t a b -> Optic' (Indexed i p) a b a' b' -> IndexedOptic' p i s t a' b'
 (<.) l l' @{ind} = l @{Idxed} . runIndexed . l' . MkIndexed {p} . indexed @{ind}
 
 
+||| Augment an optic with a constant index.
 public export
 constIndex : IsIso p => i -> Optic' p s t a b -> IndexedOptic' p i s t a b
 constIndex i l @{MkIsIso _} @{ind} = l . lmap (i,) . indexed @{ind}
 
+||| Modify the indices of an indexed optic.
 public export
 reindexed : IsIso p => (i -> j) -> IndexedOptic' p i s t a b -> IndexedOptic' p j s t a b
 reindexed @{MkIsIso _} f l @{ind} = l @{Idxed} . lmap (mapFst f) . indexed @{ind}

@@ -40,6 +40,7 @@ public export
 0 OptionalFold : (s,a : Type) -> Type
 OptionalFold = Simple (Optic IsOptFold)
 
+||| An `IndexedOptionalFold` returns an index while getting.
 public export
 0 IndexedOptionalFold : (i,s,a : Type) -> Type
 IndexedOptionalFold = Simple . IndexedOptic IsOptFold
@@ -56,6 +57,7 @@ folding : (s -> Maybe a) -> OptionalFold s a
 folding f @{MkIsOptFold _} =
   contrabimap (\x => maybe (Left x) Right (f x)) Left . right
 
+||| Construct an `IndexedOptionalFold` from a function.
 public export
 ifolding : (s -> Maybe (i, a)) -> IndexedOptionalFold i s a
 ifolding f @{MkIsOptFold _} @{ind} =

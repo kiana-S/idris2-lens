@@ -43,10 +43,12 @@ public export
 0 Optional' : (s,a : Type) -> Type
 Optional' = Simple Optional
 
+||| An `IndexedOptional` allows access to the index of a focus.
 public export
 0 IndexedOptional : (i,s,t,a,b : Type) -> Type
 IndexedOptional = IndexedOptic IsOptional
 
+||| `IndexedOptional'` is the `Simple` version of `IndexedOptional`.
 public export
 0 IndexedOptional' : (i,s,a : Type) -> Type
 IndexedOptional' = Simple . IndexedOptional
@@ -74,10 +76,12 @@ public export
 optional' : (s -> Maybe a) -> (s -> b -> s) -> Optional s s a b
 optional' prj = optional (\x => maybe (Left x) Right (prj x))
 
+||| Construct an indexed optional from a projection and a setter function.
 public export
 ioptional : (s -> Either t (i, a)) -> (s -> b -> t) -> IndexedOptional i s t a b
 ioptional prj set @{_} @{ind} = optional prj set . indexed @{ind}
 
+||| Construct a simple indexed optional from a projection and a setter function.
 public export
 ioptional' : (s -> Maybe (i, a)) -> (s -> b -> s) -> IndexedOptional i s s a b
 ioptional' prj = ioptional (\x => maybe (Left x) Right (prj x))

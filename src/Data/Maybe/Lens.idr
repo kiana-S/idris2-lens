@@ -7,10 +7,12 @@ import public Control.Lens
 %default total
 
 
+||| A prism of the `Nothing` case of a `Maybe`.
 public export
 Nothing_ : Prism' (Maybe a) ()
 Nothing_ = prism' (const Nothing) (guard . isNothing)
 
+||| A prism of the `Just` case of a `Maybe`.
 public export
 Just_ : Prism (Maybe a) (Maybe b) a b
 Just_ = prism Just $ \case
@@ -19,6 +21,8 @@ Just_ = prism Just $ \case
 
 infixl 9 .?
 
+||| The composition `l .? l'` is equivalent to `l . Just_ . l'`.
+||| Useful for optics who focus type is a `Maybe`, such as `at`.
 public export
 (.?) : IsPrism p => Optic' p s t (Maybe a) (Maybe b) -> Optic' p a b a' b' -> Optic' p s t a' b'
 l .? l' = l . Just_ . l'

@@ -53,10 +53,16 @@ public export
 0 Lens' : (s,a : Type) -> Type
 Lens' = Simple Lens
 
+||| An indexed lens allows access to the index of a focus while setting it.
+|||
+||| Any indexed lens can be coerced into a regular lens and used in normal lens
+||| functions, but there are also special functions that take indexed lenses
+||| (i.e. `iover` instead of `over`).
 public export
 0 IndexedLens : (i,s,t,a,b : Type) -> Type
 IndexedLens = IndexedOptic IsLens
 
+||| `IndexedLens'` is the `Simple` version of `IndexedLens`.
 public export
 0 IndexedLens' : (i,s,a : Type) -> Type
 IndexedLens' = Simple . IndexedLens
@@ -76,14 +82,10 @@ public export
 lens : (get : s -> a) -> (set : s -> b -> t) -> Lens s t a b
 lens get set @{MkIsLens _} = dimap (\x => (x, get x)) (uncurry set) . second
 
+||| Construct an indexed lens given getter and setter functions.
 public export
 ilens : (get : s -> (i, a)) -> (set : s -> b -> t) -> IndexedLens i s t a b
 ilens get set @{_} @{ind} = lens get set . indexed @{ind}
-
-
-public export
-withIndex : i -> Lens s t a b -> IndexedLens i s t a b
-withIndex i l @{MkIsLens _} @{ind} = l . lmap (i,) . indexed @{ind}
 
 
 ||| Extract getter and setter functions from a lens.

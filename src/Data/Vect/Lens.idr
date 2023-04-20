@@ -6,6 +6,7 @@ import Control.Lens
 %default total
 
 
+||| An isomorphism between a `Vect` and its reverse.
 public export
 reversed : Iso (Vect n a) (Vect n b) (Vect n a) (Vect n b)
 reversed = iso reverse reverse

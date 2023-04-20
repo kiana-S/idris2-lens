@@ -29,15 +29,18 @@ stripSuffix qs xs0 = go xs0 zs
     go [] _  = Nothing
 
 
+||| A prism that strips a prefix from a list of values.
 public export
 prefixed : Eq a => List a -> Prism' (List a) (List a)
 prefixed xs = prism' (xs ++) (stripPrefix xs)
 
+||| A prism that strips a suffix from a list of values.
 public export
 suffixed : Eq a => List a -> Prism' (List a) (List a)
 suffixed xs = prism' (++ xs) (stripSuffix xs)
 
 
+||| An isomorphism between a list and its reverse.
 public export
 reversed : Iso (List a) (List b) (List a) (List b)
 reversed = iso reverse reverse
