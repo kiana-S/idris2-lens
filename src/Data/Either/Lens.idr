@@ -18,9 +18,7 @@ Right_ @{MkIsPrism _} = right
 public export
 chosen : IndexedLens (Either () ()) (Either a a) (Either b b) a b
 chosen = ilens
-  (\case
-    Left x => (Left (), x)
-    Right x => (Right (), x))
+  (either (Left (),) (Right (),))
   (\case
     Left _ => Left
     Right _ => Right)

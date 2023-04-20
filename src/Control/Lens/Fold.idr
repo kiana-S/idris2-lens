@@ -23,7 +23,7 @@ import Control.Lens.Traversal
 public export
 record IsFold p where
   constructor MkIsFold
-  runIsFold : (Traversing p, Cochoice p, Bicontravariant p)
+  runIsFold : (Traversing p, Bicontravariant p)
 
 export %hint
 foldToOptFold : IsFold p => IsOptFold p

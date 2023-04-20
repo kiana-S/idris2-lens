@@ -18,11 +18,15 @@ import Control.Lens.Lens
 public export
 record IsGetter p where
   constructor MkIsGetter
-  runIsGetter : (Strong p, Cochoice p, Bicontravariant p)
+  runIsGetter : (Strong p, Bicontravariant p)
 
 export %hint
 getterToLens : IsGetter p => IsLens p
 getterToLens @{MkIsGetter _} = MkIsLens %search
+
+export %hint
+indexedGetter : IsGetter p => IsGetter (Indexed i p)
+indexedGetter @{MkIsGetter _} = MkIsGetter %search
 
 
 ||| A getter is an optic that only supports getting, not setting.

@@ -23,10 +23,14 @@ record IsSetter p where
   constructor MkIsSetter
   runIsSetter : Mapping p
 
-
 export %hint
 setterToTraversal : IsSetter p => IsTraversal p
 setterToTraversal @{MkIsSetter _} = MkIsTraversal %search
+
+export %hint
+indexedSetter : IsSetter p => IsSetter (Indexed i p)
+indexedSetter @{MkIsSetter _} = MkIsSetter %search
+
 
 
 ||| A setter is an optic that only supports setting, not getting.

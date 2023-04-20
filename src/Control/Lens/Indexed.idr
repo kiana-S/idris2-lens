@@ -1,6 +1,11 @@
 module Control.Lens.Indexed
 
+import Data.Tensor
 import Data.Profunctor
+import Data.Profunctor.Costrong
+import Data.Profunctor.Traversing
+import Data.Profunctor.Mapping
+import Data.Bicontravariant
 import Control.Lens.Optic
 import Control.Lens.Iso
 
@@ -31,3 +36,84 @@ public export
 0 IndexedOptic : ((Type -> Type -> Type) -> Type) -> (i,s,t,a,b : Type) -> Type
 IndexedOptic constr i s t a b =
   forall p,p'. constr p => Indexable i p p' => p' a b -> p s t
+
+
+
+public export
+record Indexed i (p : Type -> Type -> Type) a b where
+  constructor MkIndexed
+  runIndexed : p (i, a) b
+
+public export
+Bifunctor p => Bifunctor (Indexed i p) where
+  bimap f g (MkIndexed k) = MkIndexed $ bimap (mapSnd f) g k
+  mapFst f (MkIndexed k) = MkIndexed $ mapFst (mapSnd f) k
+  mapSnd f (MkIndexed k) = MkIndexed $ mapSnd f k
+
+public export
+Bicontravariant p => Bicontravariant (Indexed i p) where
+  contrabimap f g (MkIndexed k) = MkIndexed $ contrabimap (mapSnd f) g k
+
+public export
+Profunctor p => Profunctor (Indexed i p) where
+  dimap f g (MkIndexed k) = MkIndexed $ dimap (mapSnd f) g k
+  lmap f (MkIndexed k) = MkIndexed $ lmap (mapSnd f) k
+  rmap f (MkIndexed k) = MkIndexed $ rmap f k
+
+public export
+Bifunctor ten => GenStrong ten p => GenStrong ten (Indexed i p) where
+  strongl (MkIndexed k) = MkIndexed $ lmap (\(i,x) => mapFst (i,) x) (strongl {ten,p} k)
+  strongr (MkIndexed k) = MkIndexed $ lmap (\(i,x) => mapSnd (i,) x) (strongr {ten,p} k)
+
+public export
+Traversing p => Traversing (Indexed i p) where
+  wander tr (MkIndexed k) = MkIndexed $ wander (\f,(i,x) => tr (f . (i,)) x) k
+
+public export
+Closed p => Closed (Indexed i p) where
+  closed (MkIndexed k) = MkIndexed $ lmap (\(i,f),x => (i, f x)) (closed k)
+
+public export
+Mapping p => Mapping (Indexed i p) where
+  roam mp (MkIndexed k) = MkIndexed $ roam (\f,(i,x) => mp (f . (i,)) x) k
+
+export %hint
+indexedIso : IsIso p => IsIso (Indexed i p)
+indexedIso @{MkIsIso _} = MkIsIso %search
+
+
+
+
+public export
+icompose : IsIso p => (i -> j -> k) ->
+            IndexedOptic' p i s t a b -> IndexedOptic' (Indexed i p) j a b a' b' ->
+            IndexedOptic' p k s t a' b'
+icompose @{MkIsIso _} f l l' @{ind} =
+  l @{Idxed} . runIndexed . l' @{Idxed} . MkIndexed {p}
+  . lmap (mapFst (uncurry f) . assocl) . indexed @{ind}
+
+infixr 9 <.>
+infixr 9 .>
+infixr 9 <.
+
+public export
+(<.>) : IsIso p => IndexedOptic' p i s t a b -> IndexedOptic' (Indexed i p) j a b a' b' ->
+                    IndexedOptic' p (i, j) s t a' b'
+(<.>) = icompose (,)
+
+public export
+(.>) : Optic' p s t a b -> IndexedOptic' p i a b a' b' -> IndexedOptic' p i s t a' b'
+(.>) l l' = l . l'
+
+public export
+(<.) : IndexedOptic' p i s t a b -> Optic' (Indexed i p) a b a' b' -> IndexedOptic' p i s t a' b'
+(<.) l l' @{ind} = l @{Idxed} . runIndexed . l' . MkIndexed {p} . indexed @{ind}
+
+
+public export
+constIndex : IsIso p => i -> Optic' p s t a b -> IndexedOptic' p i s t a b
+constIndex i l @{MkIsIso _} @{ind} = l . lmap (i,) . indexed @{ind}
+
+public export
+reindexed : IsIso p => (i -> j) -> IndexedOptic' p i s t a b -> IndexedOptic' p j s t a b
+reindexed @{MkIsIso _} f l @{ind} = l @{Idxed} . lmap (mapFst f) . indexed @{ind}

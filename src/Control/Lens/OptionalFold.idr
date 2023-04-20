@@ -19,7 +19,7 @@ import Control.Lens.Getter
 public export
 record IsOptFold p where
   constructor MkIsOptFold
-  runIsOptFold : (Strong p, Choice p, Cochoice p, Bicontravariant p)
+  runIsOptFold : (Strong p, Choice p, Bicontravariant p)
 
 export %hint
 optFoldToOptional : IsOptFold p => IsOptional p
@@ -28,6 +28,10 @@ optFoldToOptional @{MkIsOptFold _} = MkIsOptional %search
 export %hint
 optFoldToGetter : IsOptFold p => IsGetter p
 optFoldToGetter @{MkIsOptFold _} = MkIsGetter %search
+
+export %hint
+indexedOptFold : IsOptFold p => IsOptFold (Indexed i p)
+indexedOptFold @{MkIsOptFold _} = MkIsOptFold %search
 
 
 ||| An `OptionalFold` is a getter that may not return a focus value.

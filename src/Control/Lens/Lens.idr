@@ -25,6 +25,10 @@ export %hint
 lensToIso : IsLens p => IsIso p
 lensToIso @{MkIsLens _} = MkIsIso %search
 
+export %hint
+indexedLens : IsLens p => IsLens (Indexed i p)
+indexedLens @{MkIsLens _} = MkIsLens %search
+
 
 ||| A *lens* is a functional reference to a value within a larger data structure.
 ||| Lenses allow one to access or modify the value that they reference, called

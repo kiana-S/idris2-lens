@@ -22,6 +22,10 @@ export %hint
 prismToIso : IsPrism p => IsIso p
 prismToIso @{MkIsPrism _} = MkIsIso %search
 
+export %hint
+indexedPrism : IsPrism p => IsPrism (Indexed i p)
+indexedPrism @{MkIsPrism _} = MkIsPrism %search
+
 
 ||| A prism is a first-class reference to one of the cases of a sum type.
 ||| Prisms allow one to determine whether a value matches the focused case

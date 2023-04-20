@@ -6,17 +6,17 @@ import Data.Contravariant
 
 
 public export
-record Indexing {0 k : Type} f (a : k) where
+record Indexing {0 k : Type} i f (a : k) where
   constructor MkIndexing
-  runIndexing : Nat -> (Nat, f a)
+  runIndexing : i -> (i, f a)
 
 
 public export
-Functor f => Functor (Indexing f) where
+Functor f => Functor (Indexing i f) where
   map f (MkIndexing g) = MkIndexing (mapSnd (map f) . g)
 
 public export
-Applicative f => Applicative (Indexing f) where
+Applicative f => Applicative (Indexing i f) where
   pure x = MkIndexing $ \i => (i, pure x)
   MkIndexing mf <*> MkIndexing ma = MkIndexing $ \i =>
     let (j, ff) = mf i
@@ -24,10 +24,10 @@ Applicative f => Applicative (Indexing f) where
     in (k, ff <*> fa)
 
 public export
-Contravariant f => Contravariant (Indexing f) where
+Contravariant f => Contravariant (Indexing i f) where
   contramap f (MkIndexing g) = MkIndexing (mapSnd (contramap f) . g)
 
 
 public export
-indexing : ((a -> Indexing f b) -> s -> Indexing f t) -> (Nat -> a -> f b) -> s -> f t
-indexing l fn s = snd $ runIndexing {f} (l (\x => MkIndexing $ \i => (S i, fn i x)) s) 0
+indexing : Num i => ((a -> Indexing i f b) -> s -> Indexing i f t) -> (i -> a -> f b) -> s -> f t
+indexing l fn s = snd $ runIndexing {f} (l (\x => MkIndexing $ \i => (1 + i, fn i x)) s) 0

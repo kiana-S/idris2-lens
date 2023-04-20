@@ -29,6 +29,10 @@ export %hint
 traversalToOptional : IsTraversal p => IsOptional p
 traversalToOptional @{MkIsTraversal _} = MkIsOptional %search
 
+export %hint
+indexedTraversal : IsTraversal p => IsTraversal (Indexed i p)
+indexedTraversal @{MkIsTraversal _} = MkIsTraversal %search
+
 
 ||| A traversal is a lens that may have more than one focus.
 public export
@@ -55,11 +59,11 @@ IndexedTraversal' = Simple . IndexedTraversal
 
 
 public export
-iordinal : Traversal s t a b -> IndexedTraversal Nat s t a b
-iordinal l @{MkIsTraversal _} @{ind} = wander (func . curry) . indexed @{ind}
+iordinal : Num i => Traversal s t a b -> IndexedTraversal i s t a b
+iordinal @{_} l @{MkIsTraversal _} @{ind} = wander (func . curry) . indexed @{ind}
   where
-    func : forall f. Applicative f => (Nat -> a -> f b) -> s -> f t
-    func = indexing $ applyStar . l . MkStar {f = Indexing f}
+    func : forall f. Applicative f => (i -> a -> f b) -> s -> f t
+    func = indexing $ applyStar . l . MkStar {f = Indexing i f}
 
 
 ||| Derive a traversal from a `Traversable` implementation.
@@ -68,7 +72,7 @@ traversed : Traversable t => Traversal (t a) (t b) a b
 traversed @{_} @{MkIsTraversal _} = traverse'
 
 public export
-itraversed : Traversable t => IndexedTraversal Nat (t a) (t b) a b
+itraversed : Num i => Traversable t => IndexedTraversal i (t a) (t b) a b
 itraversed = iordinal traversed
 
 ||| Contstruct a traversal over a `Bitraversable` container with matching types.

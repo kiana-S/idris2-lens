@@ -27,6 +27,10 @@ export %hint
 optionalToPrism : IsOptional p => IsPrism p
 optionalToPrism @{MkIsOptional _} = MkIsPrism %search
 
+export %hint
+indexedOptional : IsOptional p => IsOptional (Indexed i p)
+indexedOptional @{MkIsOptional _} = MkIsOptional %search
+
 
 ||| An `Optional` is a lens that may or may not contain the focus value.
 ||| As such, accesses will return a `Maybe` value.
