@@ -9,8 +9,8 @@ import public Control.Lens
 
 ||| A prism of the `Nothing` case of a `Maybe`.
 public export
-Nothing_ : Prism' (Maybe a) ()
-Nothing_ = prism' (const Nothing) (guard . isNothing)
+Nothing_ : Prism (Maybe a) (Maybe b) () ()
+Nothing_ = prism (const Nothing) (maybe (Right ()) (const $ Left Nothing))
 
 ||| A prism of the `Just` case of a `Maybe`.
 public export

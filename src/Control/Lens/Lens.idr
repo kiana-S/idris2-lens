@@ -108,8 +108,8 @@ withLens l f = uncurry f (getLens l)
 
 ||| `Void` vacuously "contains" a value of any other type.
 public export
-devoid : IndexedLens i Void Void a b
-devoid @{MkIsLens _} = ilens absurd const
+devoid : IndexedLens i Void t a b
+devoid = ilens absurd absurd
 
 ||| All values contain a unit.
 public export

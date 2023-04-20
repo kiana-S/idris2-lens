@@ -13,10 +13,13 @@ langversion >= 0.6.0
 depends = profunctors >= 1.1.2
 
 modules = Control.Applicative.Backwards,
+          Control.Applicative.Indexing,
+          Control.Lens.At,
           Control.Lens.Equality,
           Control.Lens.Fold,
           Control.Lens.Getter,
           Control.Lens.Iso,
+          Control.Lens.Indexed,
           Control.Lens.Lens,
           Control.Lens.Optic,
           Control.Lens.Optional,
@@ -26,4 +29,9 @@ modules = Control.Applicative.Backwards,
           Control.Lens.Setter,
           Control.Lens.Traversal,
           Control.Lens,
-          Data.Bicontravariant
+          Data.Bicontravariant,
+          Data.Either.Lens,
+          Data.List.Lens,
+          Data.Maybe.Lens,
+          Data.Tuple.Lens,
+          Data.Vect.Lens

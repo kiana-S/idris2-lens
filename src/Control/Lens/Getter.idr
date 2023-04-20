@@ -73,10 +73,13 @@ public export
 view : Getter s a -> s -> a
 view l = views l id
 
+||| Access the value and index of an optic and apply a function to them,
+||| returning the result.
 public export
 iviews : IndexedGetter i s a -> (i -> a -> r) -> s -> r
 iviews l = runForget . l @{%search} @{Idxed} . MkForget . uncurry
 
+||| Access the focus value and index of an optic, particularly a `Getter`.
 public export
 iview : IndexedGetter i s a -> s -> (i, a)
 iview l = runForget $ l @{%search} @{Idxed} $ MkForget id
@@ -92,6 +95,9 @@ public export
 (^.) : s -> Getter s a -> a
 (^.) x l = view l x
 
+||| Access the focus value and index of an optic, particularly a `Getter`.
+|||
+||| This is the operator form of `iview`.
 public export
 (^@.) : s -> IndexedGetter i s a -> (i, a)
 (^@.) x l = iview l x
