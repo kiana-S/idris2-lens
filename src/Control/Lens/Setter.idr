@@ -154,10 +154,8 @@ infixr 4 ?~; infixr 4 <.~; infixr 4 <?~; infixr 4 +~; infixr 4 *~; infixr 4 -~
 infixr 4 /~; infixr 4 ||~; infixr 4 &&~; infixr 4 <+>~
 
 infix 4 %=; infix 4 %@=; infix 4 .=; infix 4 .@=; infix 4 ?=; infix 4 <.=
-infix 4 <?=; infix 4 +=; infix 4 *=; infix 4 -=; infix 4 /=; infix 4 ||=
+infix 4 <?=; infix 4 +=; infix 4 *=; infix 4 -=; infix 4 //=; infix 4 ||=
 infix 4 &&=; infixr 4 <+>=
-
-infixr 4 <~
 
 
 ||| Set the focus of an optic to `Just` a value.
