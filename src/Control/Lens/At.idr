@@ -1,6 +1,8 @@
 module Control.Lens.At
 
 import Control.Lens.Optic
+import Control.Lens.Indexed
+import Control.Lens.Iso
 import Control.Lens.Lens
 import Control.Lens.Optional
 import Control.Lens.Traversal
@@ -17,6 +19,12 @@ interface Ixed i v a | a where
   ||| An optional that possibly accesses a value at a given index of a container.
   ix : i -> Optional' a v
 
+||| An indexed version of `ix`.
+public export
+iix : Ixed i v a => i -> IndexedOptional' i a v
+iix i = constIndex i (ix i)
+
+
 public export
 [Function] Eq e => Ixed e a (e -> a) where
   ix k = optional' (Just . ($ k)) (\f,x,k' => if k == k' then x else f k')
@@ -32,6 +40,12 @@ interface Ixed i v a => Ixed' i i' v a | a where
   ||| An lens that infallibly accesses a value at a given index of a container.
   ix' : i' -> Lens' a v
 
+||| An indexed version of `ix'`.
+public export
+iix' : Ixed' i i' v a => i' -> IndexedLens' i' a v
+iix' i = constIndex i (ix' i)
+
+
 public export
 [Function'] Eq e => Ixed' e e a (e -> a) using Function where
   ix' k = lens ($ k) (\f,x,k' => if k == k' then x else f k')
@@ -40,8 +54,8 @@ public export
 ||| This interface provides a lens to read, write, add or delete the value
 ||| associated to a key in a map or map-like container.
 |||
-||| This lens must follow the law:
-||| * `ix == at . Just_`
+||| This lens should satisfy:
+||| * `ix i == at i . Just_`
 |||
 ||| If you do not need to add or delete keys, `ix` is more convenient.
 public export
@@ -51,6 +65,13 @@ interface Ixed i v a => At i v a | a where
   |||
   ||| If you do not need to add or delete keys, `ix` is more convenient.
   at : i -> Lens' a (Maybe v)
+
+
+||| An indexed version of `at`.
+public export
+iat : At i v a => i -> IndexedLens' i a (Maybe v)
+iat i = constIndex i (at i)
+
 
 ||| Delete the value at a particular key in a container using `At`.
 public export
