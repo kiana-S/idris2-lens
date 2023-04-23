@@ -121,7 +121,7 @@ public export
 (<.) l l' @{ind} = l @{Idxed} . runIndexed . l' . MkIndexed {p} . indexed @{ind}
 
 
-||| Augment an optic with a constant index.
+||| Augment an optic with an index that is constant for all inputs.
 public export
 constIndex : IsIso p => i -> Optic' p s t a b -> IndexedOptic' p i s t a b
 constIndex i l @{MkIsIso _} @{ind} = l . lmap (i,) . indexed @{ind}
