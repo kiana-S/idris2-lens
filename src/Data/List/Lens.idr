@@ -52,7 +52,6 @@ Ixed Nat a (List a) where
     Yes _ => replaceAt n x xs
     No _ => xs)
 
-
 public export
 Cons (List a) (List b) a b where
   cons_ = prism (uncurry (::)) (\case
