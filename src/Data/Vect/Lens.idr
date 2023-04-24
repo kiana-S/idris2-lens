@@ -1,7 +1,8 @@
 module Data.Vect.Lens
 
 import Data.Vect
-import Control.Lens
+import public Control.Lens
+import Data.Tuple.Lens
 
 %default total
 
@@ -30,3 +31,28 @@ Ixed Nat a (Vect n a) where
 public export
 Ixed' Nat (Fin n) a (Vect n a) where
   ix' n = lens (index n) (flip $ replaceAt n)
+
+
+public export
+cons_ : Iso (Vect (S n) a) (Vect (S n) b) (a, Vect n a) (b, Vect n b)
+cons_ = iso (\(x :: xs) => (x,xs)) (uncurry (::))
+
+public export
+head_ : Lens' (Vect (S n) a) a
+head_ = cons_ . fst_
+
+public export
+tail_ : Lens' (Vect (S n) a) (Vect n a)
+tail_ = cons_ . snd_
+
+public export
+snoc_ : Iso (Vect (S n) a) (Vect (S n) b) (Vect n a, a) (Vect n b, b)
+snoc_ = iso unsnoc (uncurry snoc)
+
+public export
+init_ : Lens' (Vect (S n) a) (Vect n a)
+init_ = snoc_ . fst_
+
+public export
+last_ : Lens' (Vect (S n) a) a
+last_ = snoc_ . snd_
