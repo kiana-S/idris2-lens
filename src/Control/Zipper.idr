@@ -37,7 +37,7 @@ getTy (_ @> a) = a
 
 data Coil : List ZipLayer -> Type -> Type -> Type where
   Nil  : Coil [] i a
-  Cons : IndexedTraversal' i s a -> Pointer j s -> j -> (List (i, a) -> s) ->
+  Cons : Pointer j s -> j -> (List (i, a) -> s) ->
           Coil hs j s -> Coil (j @> s :: hs) i a
 
 
@@ -63,7 +63,7 @@ focus = ilens (\(MkZipper _ _ i x) => (i, x))
 
 export
 upward : Zipper (j @> s :: hs) i a -> Zipper hs j s
-upward (MkZipper (Cons _ p j k coil) q i x) =
+upward (MkZipper (Cons p j k coil) q i x) =
   MkZipper coil p j $ k $ fromPointer i x q
 
 export
@@ -103,7 +103,7 @@ export
 idownward : IndexedLens' i s a -> Zipper hs j s -> Zipper (j @> s :: hs) i a
 idownward l (MkZipper coil p j y) =
   let (i,x) = iview l y
-  in MkZipper (Cons l p j (go . map snd) coil) ([<],[]) i x
+  in MkZipper (Cons p j (go . map snd) coil) ([<],[]) i x
   where
     go : List a -> s
     go ls = set (partsOf l) ls y
@@ -111,7 +111,7 @@ idownward l (MkZipper coil p j y) =
 export
 downward : Lens' s a -> Zipper hs j s -> Zipper (j @> s :: hs) () a
 downward l (MkZipper coil p i x) =
-  MkZipper (Cons (constIndex () l) p i (go . map snd) coil) ([<], []) () (x ^. l)
+  MkZipper (Cons p i (go . map snd) coil) ([<], []) () (x ^. l)
   where
     go : List a -> s
     go ls = set (partsOf l) ls x
@@ -120,7 +120,7 @@ export
 iwithin : Alternative f => IndexedTraversal' i s a -> Zipper hs j s -> f (Zipper (j @> s :: hs) i a)
 iwithin l (MkZipper coil p j y) =
   case itoListOf l y of
-    (i,x) :: xs => pure $ MkZipper (Cons l p j (go . map snd) coil) ([<], xs) i x
+    (i,x) :: xs => pure $ MkZipper (Cons p j (go . map snd) coil) ([<], xs) i x
     [] => empty
   where
     go : List a -> s
@@ -133,7 +133,7 @@ within = iwithin . iordinal
 
 recoil : Coil hs i a -> List (i, a) -> getTy $ last (i @> a :: hs)
 recoil Nil xs = assert_total $ case xs of (_,x) :: _ => x
-recoil (Cons _ p i f coil) xs = recoil coil $ fromPointer i (f xs) p
+recoil (Cons p i f coil) xs = recoil coil $ fromPointer i (f xs) p
 
 export
 rezip : Zipper hs i a -> getTy $ last (i @> a :: hs)
