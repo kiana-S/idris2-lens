@@ -1,5 +1,5 @@
 package lens
-version = 0.1.0
+version = 0.2.0
 
 brief = "Batteries-included profunctor optics"
 
@@ -15,11 +15,12 @@ depends = profunctors >= 1.1.2
 modules = Control.Applicative.Backwards,
           Control.Applicative.Indexing,
           Control.Lens.At,
+          Control.Lens.Cons,
           Control.Lens.Equality,
           Control.Lens.Fold,
           Control.Lens.Getter,
-          Control.Lens.Iso,
           Control.Lens.Indexed,
+          Control.Lens.Iso,
           Control.Lens.Lens,
           Control.Lens.Optic,
           Control.Lens.Optional,
@@ -29,9 +30,11 @@ modules = Control.Applicative.Backwards,
           Control.Lens.Setter,
           Control.Lens.Traversal,
           Control.Lens,
+          Control.Zipper,
           Data.Bicontravariant,
           Data.Either.Lens,
           Data.List.Lens,
           Data.Maybe.Lens,
+          Data.String.Lens,
           Data.Tuple.Lens,
           Data.Vect.Lens
