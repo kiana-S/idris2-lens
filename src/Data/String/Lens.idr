@@ -55,3 +55,7 @@ public export
 Snoc String String Char Char where
   snocIso = iso unsnoc (maybe "" $ uncurry snoc)
   snoc_ = prism' (uncurry snoc) unsnoc
+
+public export
+Each String String Char Char where
+  each = unpacked . traversed

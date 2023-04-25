@@ -75,3 +75,7 @@ Snoc (List a) (List b) a b where
   snoc_ = prism (uncurry snoc) (\case
     [] => Left []
     x :: xs => Right $ unsnoc x xs)
+
+public export
+Each (List a) (List b) a b where
+  each = traversed

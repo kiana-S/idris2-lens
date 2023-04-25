@@ -26,3 +26,9 @@ infixl 9 .?
 public export
 (.?) : IsPrism p => Optic' p s t (Maybe a) (Maybe b) -> Optic' p a b a' b' -> Optic' p s t a' b'
 l .? l' = l . Just_ . l'
+
+
+public export
+Each (Maybe a) (Maybe b) a b where
+  -- each = Just_
+  each = traversed

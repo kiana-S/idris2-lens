@@ -29,11 +29,6 @@ Ixed Nat a (Vect n a) where
 
 
 public export
-Ixed' Nat (Fin n) a (Vect n a) where
-  ix' n = lens (index n) (flip $ replaceAt n)
-
-
-public export
 cons_ : Iso (Vect (S n) a) (Vect (S n) b) (a, Vect n a) (b, Vect n b)
 cons_ = iso (\(x :: xs) => (x,xs)) (uncurry (::))
 
@@ -56,3 +51,12 @@ init_ = snoc_ . fst_
 public export
 last_ : Lens' (Vect (S n) a) a
 last_ = snoc_ . snd_
+
+
+public export
+Ixed' Nat (Fin n) a (Vect n a) where
+  ix' n = lens (index n) (flip $ replaceAt n)
+
+public export
+Each (Vect n a) (Vect n b) a b where
+  each = traversed

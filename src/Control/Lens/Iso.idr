@@ -4,6 +4,8 @@ import Data.Maybe
 import Data.Contravariant
 import Data.Tensor
 import Data.Profunctor
+import Control.Monad.Identity
+import Control.Applicative.Const
 import Control.Lens.Optic
 import Control.Lens.Equality
 
@@ -143,6 +145,15 @@ casted = iso cast cast
 public export
 non : Eq a => a -> Iso' (Maybe a) a
 non x = iso (fromMaybe x) (\y => guard (x /= y) $> y)
+
+
+public export
+Id_ : Iso (Identity a) (Identity b) a b
+Id_ = iso runIdentity Id
+
+public export
+Const_ : Iso (Const a b) (Const c d) a c
+Const_ = iso runConst MkConst
 
 
 -- Mapping
