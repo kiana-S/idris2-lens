@@ -26,6 +26,11 @@ public export
 packed : Iso' (List Char) String
 packed = iso pack unpack
 
+||| An isomorphism between a string and its reverse.
+public export
+reversed : Iso' String String
+reversed = involuted reverse
+
 
 public export
 Ixed Nat Char String where
@@ -33,8 +38,20 @@ Ixed Nat Char String where
 
 public export
 Cons String String Char Char where
+  consIso = iso strUncons (maybe "" $ uncurry strCons)
   cons_ = prism' (uncurry strCons) strUncons
+
+snoc : String -> Char -> String
+snoc s c = s ++ singleton c
+
+unsnoc : String -> Maybe (String, Char)
+unsnoc s =
+  case length s of
+    Z => Nothing
+    (S n) => Just (substr Z n s,
+                    assert_total $ strIndex s (cast n))
 
 public export
 Snoc String String Char Char where
-  snoc_ = unpacked . snoc_ . mappingFst packed
+  snocIso = iso unsnoc (maybe "" $ uncurry snoc)
+  snoc_ = prism' (uncurry snoc) unsnoc

@@ -48,22 +48,30 @@ reversed = iso reverse reverse
 
 public export
 Ixed Nat a (List a) where
-  ix n = optional' (getAt n) (\xs,x => case inBounds n xs of
-    Yes _ => replaceAt n x xs
-    No _ => xs)
+  ix = element
 
 public export
 Cons (List a) (List b) a b where
+  consIso = iso (\case
+      [] => Nothing
+      x :: xs => Just (x,xs))
+    (maybe [] $ uncurry (::))
+
   cons_ = prism (uncurry (::)) (\case
     [] => Left []
     x :: xs => Right (x, xs))
 
+unsnoc : a -> List a -> (List a, a)
+unsnoc x [] = ([], x)
+unsnoc x (y :: xs) = mapFst (x ::) $ unsnoc y xs
+
 public export
 Snoc (List a) (List b) a b where
+  snocIso = iso (\case
+      [] => Nothing
+      x :: xs => Just $ unsnoc x xs)
+    (maybe [] $ uncurry snoc)
+
   snoc_ = prism (uncurry snoc) (\case
     [] => Left []
     x :: xs => Right $ unsnoc x xs)
-    where
-      unsnoc : a -> List a -> (List a, a)
-      unsnoc x [] = ([], x)
-      unsnoc x (y :: xs) = mapFst (x ::) $ unsnoc y xs
