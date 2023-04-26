@@ -1,7 +1,6 @@
 module Data.String.Lens
 
 import Data.String
-import Data.Profunctor
 import public Control.Lens
 import Data.List.Lens
 
