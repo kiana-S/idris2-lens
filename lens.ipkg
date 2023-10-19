@@ -10,7 +10,8 @@ sourcedir = "src"
 readme = "README.md"
 
 langversion >= 0.6.0
-depends = profunctors >= 1.1.2
+depends = profunctors >= 1.1.2,
+          elab-util >= 0.6.0
 
 modules = Control.Applicative.Backwards,
           Control.Applicative.Indexing,
@@ -41,4 +42,8 @@ modules = Control.Applicative.Backwards,
           Data.SortedSet.Lens,
           Data.String.Lens,
           Data.Tuple.Lens,
-          Data.Vect.Lens
+          Data.Vect.Lens,
+          Derive.Lens.Options,
+          Derive.Lens,
+          Derive.Prism,
+          Derive.Iso
