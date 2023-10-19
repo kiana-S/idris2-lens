@@ -67,5 +67,5 @@ last_ @{_} @{MkIsOptional _} = snoc_ . second
 
 ||| Use a `Snoc` implementation to construct an empty sequence.
 public export
-nil' : Snoc s s a a => s
-nil' = review snocIso Nothing
+lin : Snoc s s a a => s
+lin = review snocIso Nothing
