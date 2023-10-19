@@ -7,6 +7,11 @@ import public Control.Lens
 
 
 public export
+each : Fold (SortedSet k) k
+each = folding SortedSet.toList
+
+
+public export
 Ixed k () (SortedSet k) where
   ix k = optional' (ignore . guard . contains k) const
 

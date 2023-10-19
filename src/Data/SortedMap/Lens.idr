@@ -30,3 +30,17 @@ atDep : DecEq k => {0 p : k -> Type} -> (x : k) ->
 atDep {p} x = lens (lookupPrecise x) (\m => \case
   Nothing => delete x m
   Just v => insert x v m)
+
+
+public export
+Each (SortedMap k v) (SortedMap k w) v w where
+  each = traversed
+
+public export
+IEach k (SortedMap k v) (SortedMap k w) v w where
+  ieach = itraversal func
+    where
+      func : Applicative f => (k -> v -> f w) -> SortedMap k v -> f (SortedMap k w)
+      func f = map (cast {from = SortedDMap k (const w)})
+                . Dependent.traverse (f %search)
+                . cast {to = SortedDMap k (const v)}

@@ -58,3 +58,7 @@ Snoc String String Char Char where
 public export
 Each String String Char Char where
   each = unpacked . traversed
+
+public export
+Num i => IEach i String String Char Char where
+  ieach = unpacked . itraversed

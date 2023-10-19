@@ -79,3 +79,7 @@ Snoc (List a) (List b) a b where
 public export
 Each (List a) (List b) a b where
   each = traversed
+
+public export
+Num i => IEach i (List a) (List b) a b where
+  ieach = itraversed

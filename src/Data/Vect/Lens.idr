@@ -3,6 +3,7 @@ module Data.Vect.Lens
 import Data.Vect
 import public Control.Lens
 import Data.Tuple.Lens
+import Data.Profunctor.Traversing
 
 %default total
 
@@ -15,17 +16,23 @@ reversed = iso reverse reverse
 
 public export
 Ixed Nat a (Vect n a) where
-  ix n = optional' (ixMaybe n) (set n)
-    where
-      ixMaybe : forall n. Nat -> Vect n a -> Maybe a
-      ixMaybe _ [] = Nothing
-      ixMaybe Z (x :: _) = Just x
-      ixMaybe (S n) (_ :: xs) = ixMaybe n xs
+  ix = element
 
-      set : forall n. Nat -> Vect n a -> a -> Vect n a
-      set _ [] _ = []
-      set Z (_ :: xs) y = y :: xs
-      set (S n) (x :: xs) y = x :: set n xs y
+public export
+Ixed' Nat (Fin n) a (Vect n a) where
+  ix' n = lens (index n) (flip $ replaceAt n)
+
+public export
+Each (Vect n a) (Vect n b) a b where
+  each = traversed
+
+public export
+IEach (Fin n) (Vect n a) (Vect n b) a b where
+  ieach = itraversal func
+    where
+      func : forall n. Applicative f => (Fin n -> a -> f b) -> Vect n a -> f (Vect n b)
+      func f [] = pure []
+      func f (x :: xs) = [| f FZ x :: func (f . FS) xs |]
 
 
 public export
@@ -51,12 +58,3 @@ init_ = snoc_ . fst_
 public export
 last_ : Lens' (Vect (S n) a) a
 last_ = snoc_ . snd_
-
-
-public export
-Ixed' Nat (Fin n) a (Vect n a) where
-  ix' n = lens (index n) (flip $ replaceAt n)
-
-public export
-Each (Vect n a) (Vect n b) a b where
-  each = traversed

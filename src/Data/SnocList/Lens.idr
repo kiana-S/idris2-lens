@@ -79,3 +79,7 @@ Cons (SnocList a) (SnocList b) a b where
 public export
 Each (SnocList a) (SnocList b) a b where
   each = traversed
+
+public export
+Num i => IEach i (SnocList a) (SnocList b) a b where
+  ieach = itraversed
