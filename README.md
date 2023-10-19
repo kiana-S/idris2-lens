@@ -3,10 +3,14 @@
 This package provides utilities for working with lenses, prisms, traversals,
 and other optics in Idris. This library uses *profunctor optics*.
 
-Eventually, this library will also include elaboration scripts to automatically
-generate lenses for a particular datatype.
+## Comparison to Monocle
 
-## Comparisons
+[Monocle](https://github.com/stefan-hoeck/idris2-monocle) is another Idris 2 library
+for lenses. That library represents lenses using a datatype, which is often less
+efficient at run-time, but results in better error messages and is generally
+simpler to understand.
+
+## Comparisons to Non-Idris Libraries
 
 This library is inspired by the Haskell libraries [lens](https://hackage.haskell.org/package/lens-5.2.2),
 [optics](https://hackage.haskell.org/package/optics) and [fresnel](https://hackage.haskell.org/package/fresnel),
@@ -46,3 +50,7 @@ Or you can install using [pack](https://github.com/stefan-hoeck/idris2-pack):
 pack install lens
 ```
 
+## Thanks
+
+Special thanks to [Stefan Höck](https://github.com/stefan-hoeck) for assistance
+with writing elaboration scripts.
