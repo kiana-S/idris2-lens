@@ -60,14 +60,24 @@ IndexedTraversal' = Simple . IndexedTraversal
 -- Utilities for traversals
 ------------------------------------------------------------------------------
 
+||| Construct a traversal from a `traverse`-like function.
+public export
+traversal : (forall f. Applicative f => (a -> f b) -> s -> f t) -> Traversal s t a b
+traversal f @{MkIsTraversal _} = wander f
+
+||| Construct an indexed traversal from a `traverse`-like function.
+public export
+itraversal : (forall f. Applicative f => (i -> a -> f b) -> s -> f t) -> IndexedTraversal i s t a b
+itraversal f @{MkIsTraversal _} @{ind} = wander (f . curry) . indexed @{ind}
+
 
 ||| Convert a traversal into an indexed traversal, adding an index for the
 ||| ordinal position of the focus.
 public export
 iordinal : Num i => Traversal s t a b -> IndexedTraversal i s t a b
-iordinal @{_} l @{MkIsTraversal _} @{ind} = wander (func . curry) . indexed @{ind}
+iordinal l = itraversal func
   where
-    func : forall f. Applicative f => (i -> a -> f b) -> s -> f t
+    func : Applicative f => (i -> a -> f b) -> s -> f t
     func = indexing $ applyStar . l . MkStar {f = Indexing i f}
 
 
@@ -84,13 +94,13 @@ itraversed = iordinal traversed
 ||| Contstruct a traversal over a `Bitraversable` container with matching types.
 public export
 both : Bitraversable t => Traversal (t a a) (t b b) a b
-both @{_} @{MkIsTraversal _} = wander (\f => bitraverse f f)
+both = traversal (\f => bitraverse f f)
 
 
 ||| Reverse the order of a traversal's focuses.
 public export
 backwards : Traversal s t a b -> Traversal s t a b
-backwards l @{MkIsTraversal _} = wander func
+backwards l = traversal func
   where
     func : Applicative f => (a -> f b) -> s -> f t
     func fn = forwards . applyStar {f = Backwards f} (l $ MkStar (MkBackwards . fn))
@@ -229,7 +239,7 @@ isingular l = ioptional' (runForget $ l @{%search} @{Idxed} (MkForget Just)) set
 ||| Filter the focuses of a traversal by a predicate on their ordinal positions.
 public export
 elementsOf : Traversal s t a a -> (Nat -> Bool) -> Traversal s t a a
-elementsOf l p @{MkIsTraversal _} = wander func
+elementsOf l p = traversal func
   where
     func : Applicative f => (a -> f a) -> s -> f t
     func fn = indexing {f} (traverseOf l) $
