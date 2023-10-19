@@ -22,7 +22,7 @@ Just_ = prism Just $ \case
 infixl 9 .?
 
 ||| The composition `l .? l'` is equivalent to `l . Just_ . l'`.
-||| Useful for optics who focus type is a `Maybe`, such as `at`.
+||| Useful for optics whose focus type is a `Maybe`, such as `at`.
 public export
 (.?) : IsPrism p => Optic' p s t (Maybe a) (Maybe b) -> Optic' p a b a' b' -> Optic' p s t a' b'
 l .? l' = l . Just_ . l'

@@ -14,7 +14,7 @@ import Control.Lens.Optional
 ||| left side of a sequence.
 public export
 interface Cons s t a b | s where
-  ||| An isomorphism that can inspact the left side of a sequence.
+  ||| An isomorphism that can inspect the left side of a sequence.
   consIso : Iso s t (Maybe (a, s)) (Maybe (b, t))
 
   ||| A prism that can attach or detach a value from the left side of a
@@ -45,7 +45,7 @@ nil = review consIso Nothing
 ||| right side of a sequence.
 public export
 interface Snoc s t a b | s where
-  ||| An isomorphism that can inspact the right side of a sequence.
+  ||| An isomorphism that can inspect the right side of a sequence.
   snocIso : Iso s t (Maybe (s, a)) (Maybe (t, b))
 
   ||| This is a prism that can attach or detach a value from the right side of a
