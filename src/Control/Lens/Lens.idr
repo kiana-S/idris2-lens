@@ -154,7 +154,7 @@ infix 4 <||=; infix 4 <&&=; infix 4 <<+>=
 infix 4 <<%=; infix 4 <<%@=; infix 4 <<.=; infix 4 <<?=; infix 4 <<+=; infix 4 <<*=
 infix 4 <<-=; infix 4 <</=; infix 4 <<||=; infix 4 <<&&=; infix 4 <<<+>=
 
-infixr 2 <<~
+infixr 1 <<<~
 
 
 public export
@@ -403,11 +403,8 @@ public export
 
 
 ||| Run a monadic action and set the focus of an optic in state to the result.
-||| This is different from `(<~)` in that it also passes though the output of
-||| the action.
+||| This is different from `(<~)` and `(<<~)` in that it also passes though
+||| the old value of the optic.
 public export
-(<<~) : MonadState s m => Lens s s a b -> m b -> m b
-(<<~) l x = do
-  v <- x
-  modify $ l @{MkIsLens Function} (const v)
-  pure v
+(<<<~) : MonadState s m => Lens s s a b -> m b -> m a
+(<<<~) l m = l <<.= !m

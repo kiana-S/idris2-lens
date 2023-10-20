@@ -157,6 +157,8 @@ infix 4 %=; infix 4 %@=; infix 4 .=; infix 4 .@=; infix 4 ?=; infix 4 <.=
 infix 4 <?=; infix 4 +=; infix 4 *=; infix 4 -=; infix 4 //=; infix 4 ||=
 infix 4 &&=; infixr 4 <+>=
 
+infix 1 <~
+infixr 1 <<~
 
 ||| Set the focus of an optic to `Just` a value.
 public export
@@ -303,4 +305,11 @@ public export
 ||| variable.
 public export
 (<~) : MonadState s m => Setter s s a b -> m b -> m ()
-(<~) l m = m >>= (l .=)
+(<~) l m = l .= !m
+
+||| Run a monadic action and set the focus of an optic in state to the result.
+||| This is different from `(<~)` in that it also passes though the output of
+||| the action.
+public export
+(<<~) : MonadState s m => Setter s s a b -> m b -> m b
+(<<~) l m = l <.= !m
