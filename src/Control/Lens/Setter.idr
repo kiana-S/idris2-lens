@@ -150,15 +150,9 @@ public export
 -- More operators
 ------------------------------------------------------------------------------
 
-infixr 4 ?~; infixr 4 <.~; infixr 4 <?~; infixr 4 +~; infixr 4 *~; infixr 4 -~
-infixr 4 /~; infixr 4 ||~; infixr 4 &&~; infixr 4 <+>~
-
-infix 4 %=; infix 4 %@=; infix 4 .=; infix 4 .@=; infix 4 ?=; infix 4 <.=
-infix 4 <?=; infix 4 +=; infix 4 *=; infix 4 -=; infix 4 //=; infix 4 ||=
-infix 4 &&=; infixr 4 <+>=
-
-infix 1 <~
-infixr 1 <<~
+infixr 4 ?~, <.~, <?~, +~, *~, -~, /~, ||~, &&~, <+>~
+infix 4 %=, %@=, .=, .@=, ?=, <.=, <?=, +=, *=, -=, //=, ||=, &&=, <+>=
+infix 1 <~, <<~
 
 ||| Set the focus of an optic to `Just` a value.
 public export

@@ -139,20 +139,13 @@ fusing @{MkIsIso _} l = proextract . l . propure
 -- Operators
 ------------------------------------------------------------------------------
 
-infixr 4 %%~; infix 4 %%=; infix 4 %%@~; infix 4 %%@=
+infixr 4 %%~, %%=, %%@~, %%@=
 
-infixr 4 <%~; infixr 4 <%@~; infixr 4 <+~; infixr 4 <*~; infixr 4 <-~
-infixr 4 </~; infixr 4 <||~; infixr 4 <&&~; infixr 4 <<+>~
+infixr 4 <%~, <%@~, <+~, <*~, <-~, </~, <||~, <&&~, <<+>~
+infixr 4 <<%~, <<%@~, <<.~, <<?~, <<+~, <<*~, <<-~, <</~, <<||~, <<&&~, <<<+>~
 
-infixr 4 <<%~; infixr 4 <<%@~; infixr 4 <<.~; infixr 4 <<?~; infixr 4 <<+~
-infixr 4 <<*~; infixr 4 <<-~; infixr 4 <</~; infixr 4 <<||~; infixr 4 <<&&~
-infixr 4 <<<+>~
-
-infix 4 <%=; infix 4 <%@=; infix 4 <+=; infix 4 <*=; infix 4 <-=; infix 4 </=
-infix 4 <||=; infix 4 <&&=; infix 4 <<+>=
-
-infix 4 <<%=; infix 4 <<%@=; infix 4 <<.=; infix 4 <<?=; infix 4 <<+=; infix 4 <<*=
-infix 4 <<-=; infix 4 <</=; infix 4 <<||=; infix 4 <<&&=; infix 4 <<<+>=
+infix 4 <%=, <%@=, <+=, <*=, <-=, </=, <||=, <&&=, <<+>=
+infix 4 <<%=, <<%@=, <<.=, <<?=, <<+=, <<*=, <<-=, <</=, <<||=, <<&&=, <<<+>=
 
 infixr 1 <<<~
 
