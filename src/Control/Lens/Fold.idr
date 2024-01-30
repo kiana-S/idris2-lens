@@ -218,7 +218,7 @@ ianyOf = ifoldMapOf @{Any}
 ||| Return `True` if the element occurs in the focuses of the optic.
 public export
 elemOf : Eq a => Fold s a -> a -> s -> Bool
-elemOf l = allOf l . (==)
+elemOf l = anyOf l . (==)
 
 ||| Calculate the number of focuses of the optic.
 public export
