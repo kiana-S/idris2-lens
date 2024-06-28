@@ -5,6 +5,11 @@ import public Language.Reflection.Util
 
 %default total
 
+toField : Name -> Name
+toField (NS ns nm)      = NS ns (toField nm)
+toField (UN (Basic nm)) = UN (Field nm)
+toField nm              = nm
+
 parameters (o : LensOptions)
   lname : Name -> Name
   lname n = UN $ Basic (o.fieldName $ nameStr n)
@@ -17,7 +22,7 @@ parameters (o : LensOptions)
 
   ldef : BoundArg 0 RegularNamed -> Decl
   ldef (BA x _ _) =
-    let fld := argName x
+    let fld := toField $ argName x
         nme := lname fld
         u   := update [ISetField [nameStr fld] `(y)] `(x)
      in def nme [patClause (var nme) `(lens ~(var fld) $ \x,y => ~(u))]
