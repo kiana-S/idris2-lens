@@ -93,7 +93,7 @@ icompose @{MkIsIso _} f l l' @{ind} =
   l @{Idxed} . runIndexed . l' @{Idxed} . MkIndexed {p}
   . lmap (mapFst (uncurry f) . assocl) . indexed @{ind}
 
-infixr 9 <.>, .>, <.
+export infixr 9 <.>, .>, <.
 
 ||| Compose two indexed optics, returning an optic indexed by a pair of indices.
 |||

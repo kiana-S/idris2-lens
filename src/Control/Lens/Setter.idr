@@ -91,7 +91,7 @@ public export
 over : Setter s t a b -> (a -> b) -> s -> t
 over l = l @{MkIsSetter Function}
 
-infixr 4 %~
+export infixr 4 %~, %@~, .~, .@~
 
 ||| Modify the focus or focuses of an optic.
 |||
@@ -106,8 +106,6 @@ public export
 iover : IndexedSetter i s t a b -> (i -> a -> b) -> s -> t
 iover l = l @{MkIsSetter Function} @{Idxed} . uncurry
 
-infixr 4 %@~
-
 ||| Modify the focus or focuses of an indexed optic, having access to the index.
 |||
 ||| This is the operator form of `iover`.
@@ -120,8 +118,6 @@ public export
 public export
 set : Setter s t a b -> b -> s -> t
 set l = over l . const
-
-infixr 4 .~
 
 ||| Set the focus or focuses of an optic to a constant value.
 |||
@@ -136,8 +132,6 @@ public export
 iset : IndexedSetter i s t a b -> (i -> b) -> s -> t
 iset l = iover l . (const .)
 
-infix 4 .@~
-
 ||| Set the focus or focuses of an indexed optic, having access to the index.
 |||
 ||| This is the operator form of `iset`.
@@ -150,9 +144,9 @@ public export
 -- More operators
 ------------------------------------------------------------------------------
 
-infixr 4 ?~, <.~, <?~, +~, *~, -~, /~, ||~, &&~, <+>~
-infix 4 %=, %@=, .=, .@=, ?=, <.=, <?=, +=, *=, -=, //=, ||=, &&=, <+>=
-infix 1 <~, <<~
+export infixr 4 ?~, <.~, <?~, +~, *~, -~, /~, ||~, &&~, <+>~
+export infix 4 %=, %@=, .=, .@=, ?=, <.=, <?=, +=, *=, -=, //=, ||=, &&=, <+>=
+export infix 1 <~, <<~
 
 ||| Set the focus of an optic to `Just` a value.
 public export

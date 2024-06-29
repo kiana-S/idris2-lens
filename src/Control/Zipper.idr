@@ -27,7 +27,7 @@ fromPointer k x (l, r) = l <>> (k,x) :: r
 ------------------------------------------------------------------------------
 
 
-infix 9 @>
+export infix 9 @>
 
 ||| A simple type that represents a layer of the zipper as it moves downwards.
 |||

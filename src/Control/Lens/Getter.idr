@@ -85,7 +85,7 @@ iview : IndexedGetter i s a -> s -> (i, a)
 iview l = runForget $ l @{%search} @{Idxed} $ MkForget id
 
 
-infixl 8 ^., ^@.
+export infixl 8 ^., ^@.
 
 ||| Access the focus value of an optic, particularly a `Getter`.
 |||

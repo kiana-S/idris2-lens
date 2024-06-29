@@ -19,7 +19,7 @@ Just_ = prism Just $ \case
   Nothing => Left Nothing
   Just x => Right x
 
-infixl 9 .?
+export infixl 9 .?
 
 ||| The composition `l .? l'` is equivalent to `l . Just_ . l'`.
 ||| Useful for optics whose focus type is a `Maybe`, such as `at`.

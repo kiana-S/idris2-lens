@@ -287,7 +287,7 @@ public export
 preview : Fold s a -> s -> Maybe a
 preview = firstOf
 
-infixl 8 ^?
+export infixl 8 ^?, ^@?, ^., ^@.
 
 ||| Access the first focus value of an optic, returning `Nothing` if there are
 ||| no focuses.
@@ -305,8 +305,6 @@ public export
 public export
 ipreview : IndexedFold i s a -> s -> Maybe (i, a)
 ipreview = ifirstOf
-
-infixl 8 ^@?
 
 ||| Access the first focus value and index of an indexed optic, returning Nothing
 ||| if there are no focuses.
@@ -338,8 +336,6 @@ public export
 toListOf : Fold s a -> s -> List a
 toListOf l = foldrOf l (::) []
 
-infixl 8 ^..
-
 ||| Return a list of all focuses of a fold.
 |||
 ||| This is the operator form of `toListOf`.
@@ -352,8 +348,6 @@ public export
 public export
 itoListOf : IndexedFold i s a -> s -> List (i, a)
 itoListOf l = ifoldrOf l ((::) .: (,)) []
-
-infixl 8 ^@..
 
 ||| Return a list of all focuses and indices of an indexed fold.
 |||

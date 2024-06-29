@@ -66,7 +66,7 @@ public export
 review : Review s a -> a -> s
 review l = reviews l id
 
-infixr 8 ^$
+export infixr 8 ^$
 
 ||| Turn an optic around to inject a focus value into the larger data structure.
 ||| This function takes a `Review`, which can also be a `Prism` or `Iso`.
