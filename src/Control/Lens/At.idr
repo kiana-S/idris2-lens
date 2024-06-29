@@ -37,7 +37,7 @@ public export
 ||| `ix'`; for example, `Vect n a` uses `Nat` for `ix` and `Fin n` for `ix'`.
 public export
 interface Ixed i v a => Ixed' i i' v a | a where
-  ||| An lens that infallibly accesses a value at a given index of a container.
+  ||| A lens that infallibly accesses a value at a given index of a container.
   ix' : i' -> Lens' a v
 
 ||| An indexed version of `ix'`.

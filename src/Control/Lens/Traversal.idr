@@ -188,7 +188,7 @@ ifailover l = failover (l @{%search} @{Idxed}) . uncurry
 
 partsOf_update : a -> State (List a) a
 partsOf_update x = get >>= \case
-  x' :: xs' => put xs' >> pure x'
+  x' :: xs' => put xs' $> x'
   []        => pure x
 
 ||| Convert a traversal into a lens over a list of values.
@@ -263,12 +263,12 @@ element : Traversable t => Nat -> Optional' (t a) a
 element = elementOf traversed
 
 
-||| Limit a traversal to its first n focuses.
+||| Limit a traversal to its first `n` focuses.
 public export
 taking : Nat -> Traversal s t a a -> Traversal s t a a
 taking n l = elementsOf l (< n)
 
-||| Remove the first n focuses from a traversal.
+||| Remove the first `n` focuses from a traversal.
 public export
 dropping : Nat -> Traversal s t a a -> Traversal s t a a
-dropping i l = elementsOf l (>= i)
+dropping n l = elementsOf l (>= n)

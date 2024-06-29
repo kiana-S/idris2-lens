@@ -237,12 +237,12 @@ public export
 ||| Set within a state monad with pass-through.
 public export
 (<.=) : MonadState s m => Setter s s a b -> b -> m b
-(<.=) l x = (l .= x) >> pure x
+(<.=) l x = (l .= x) $> x
 
 ||| Set to `Just` a value within a state monad with pass-through.
 public export
 (<?=) : MonadState s m => Setter s s a (Maybe b) -> b -> m b
-(<?=) l x = (l ?= x) >> pure x
+(<?=) l x = (l ?= x) $> x
 
 ||| Add a constant value to the focus of an optic within a state monad.
 public export
